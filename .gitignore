@@ -1,0 +1,102 @@
+# ==========================================
+# Python & Virtual Environments
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+apps/api/.venv/
+.venv/
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==========================================
+# Node.js & Next.js
+# ==========================================
+node_modules/
+.pnp
+.pnp.js
+apps/web/.next/
+.next/
+out/
+apps/web/out/
+apps/web/build/
+.npm
+.yarn/
+*.tsbuildinfo
+next-env.d.ts
+
+# ==========================================
+# Database & Persistence
+# ==========================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ==========================================
+# Storage Directory (Protect all content, preserve .gitkeep)
+# ==========================================
+storage/**
+!storage/**/
+!storage/**/.gitkeep
+
+# ==========================================
+# Logs & Temporary Files
+# ==========================================
+*.log
+*.log.*
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+tmp/
+temp/
+.temp/
+*.tmp
+*.bak
+scratch/
+
+# ==========================================
+# Environment & Secrets (Allow .env.example)
+# ==========================================
+.env
+.env.*
+*.env
+*.env.*
+!.env.example
+!*.env.example
+!**/.env.example
+
+# ==========================================
+# IDE & Operating System
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
