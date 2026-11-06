@@ -7,7 +7,7 @@ from app.db.base import Base
 from app.db.session import engine
 from app.api.v1.router import api_router
 # Import all models to ensure they are registered with Base.metadata
-from app.models import user, system_state  # noqa: F401
+from app.models import user, system_state, ai_disclosure  # noqa: F401
 
 
 @asynccontextmanager

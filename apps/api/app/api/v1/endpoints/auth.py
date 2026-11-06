@@ -1,7 +1,8 @@
+import threading
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, DBAPIError
 
 from app.core.config import settings
 from app.core.rate_limiter import enforce_login_rate_limit
@@ -58,6 +59,9 @@ def get_csrf_token(
 INITIAL_ADMIN_SETUP_LOCK_KEY = "INITIAL_ADMIN_SETUP_LOCK"
 
 
+_setup_lock = threading.Lock()
+
+
 @router.post(
     "/setup",
     response_model=UserResponse,
@@ -71,85 +75,86 @@ def setup_initial_admin(
 ):
     """
     Bootstrap the initial root administrator account on first run.
-    Uses database-level serialization (BEGIN IMMEDIATE on SQLite) and an atomic
-    uniqueness lock record (SystemState) to prevent race conditions.
+    Uses process-level mutex and database-level serialization (BEGIN IMMEDIATE on SQLite)
+    with an atomic uniqueness lock record (SystemState) to prevent race conditions.
     """
-    # 1. Enforce SQLite write lock serialization if running on SQLite
-    bind = db.get_bind()
-    if bind is not None and bind.dialect.name == "sqlite":
+    with _setup_lock:
+        # 1. Enforce SQLite write lock serialization if running on SQLite
+        bind = db.get_bind()
+        if bind is not None and bind.dialect.name == "sqlite":
+            try:
+                db.execute(text("BEGIN IMMEDIATE"))
+            except Exception:
+                pass
+
+        # 2. Check if setup lock record already exists
+        existing_lock = db.scalar(
+            select(SystemState).where(SystemState.key == INITIAL_ADMIN_SETUP_LOCK_KEY)
+        )
+        if existing_lock:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Initial setup is already complete. Please log in.",
+            )
+
+        # 3. Check existing user count
+        user_count = db.scalar(select(func.count(User.id)))
+        if user_count and user_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Initial setup is already complete. Please log in.",
+            )
+
+        # 4. Atomically insert setup lock and admin user
+        lock_record = SystemState(
+            key=INITIAL_ADMIN_SETUP_LOCK_KEY,
+            value="COMPLETED",
+        )
+        hashed_pw = get_password_hash(payload.password)
+        admin_user = User(
+            email=payload.email,
+            hashed_password=hashed_pw,
+            full_name=payload.full_name or "Publisher Admin",
+            is_active=True,
+            is_admin=True,
+        )
+        db.add(lock_record)
+        db.add(admin_user)
+
         try:
-            db.execute(text("BEGIN IMMEDIATE"))
-        except Exception:
-            pass
+            db.commit()
+            db.refresh(admin_user)
+        except (IntegrityError, OperationalError, DBAPIError, Exception):
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Initial setup is already complete. Please log in.",
+            )
 
-    # 2. Check if setup lock record already exists
-    existing_lock = db.scalar(
-        select(SystemState).where(SystemState.key == INITIAL_ADMIN_SETUP_LOCK_KEY)
-    )
-    if existing_lock:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Initial setup is already complete. Please log in.",
+        # Issue auth cookies immediately
+        token = create_access_token(subject=admin_user.id)
+        csrf_token = generate_csrf_token(identity=admin_user.id)
+
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            httponly=True,
+            samesite=settings.COOKIE_SAMESITE,
+            secure=settings.SECURE_COOKIE,
+            path="/api",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+        response.set_cookie(
+            key="csrf_token",
+            value=csrf_token,
+            httponly=False,
+            samesite=settings.COOKIE_SAMESITE,
+            secure=settings.SECURE_COOKIE,
+            path="/",
+            max_age=86400,
         )
 
-    # 3. Check existing user count
-    user_count = db.scalar(select(func.count(User.id)))
-    if user_count and user_count > 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Initial setup is already complete. Please log in.",
-        )
-
-    # 4. Atomically insert setup lock and admin user
-    lock_record = SystemState(
-        key=INITIAL_ADMIN_SETUP_LOCK_KEY,
-        value="COMPLETED",
-    )
-    hashed_pw = get_password_hash(payload.password)
-    admin_user = User(
-        email=payload.email,
-        hashed_password=hashed_pw,
-        full_name=payload.full_name or "Publisher Admin",
-        is_active=True,
-        is_admin=True,
-    )
-    db.add(lock_record)
-    db.add(admin_user)
-
-    try:
-        db.commit()
-        db.refresh(admin_user)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Initial setup is already complete. Please log in.",
-        )
-
-    # Issue auth cookies immediately
-    token = create_access_token(subject=admin_user.id)
-    csrf_token = generate_csrf_token(identity=admin_user.id)
-
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite=settings.COOKIE_SAMESITE,
-        secure=settings.SECURE_COOKIE,
-        path="/api",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-    )
-    response.set_cookie(
-        key="csrf_token",
-        value=csrf_token,
-        httponly=False,
-        samesite=settings.COOKIE_SAMESITE,
-        secure=settings.SECURE_COOKIE,
-        path="/",
-        max_age=86400,
-    )
-
-    return admin_user
+        return admin_user
 
 
 @router.post(

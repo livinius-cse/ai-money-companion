@@ -55,7 +55,7 @@
           "Authentication"
         ],
         "summary": "Setup Initial Admin",
-        "description": "Bootstrap the initial root administrator account on first run.\nOnly permitted when no users exist in the database.",
+        "description": "Bootstrap the initial root administrator account on first run.\nUses database-level serialization (BEGIN IMMEDIATE on SQLite) and an atomic\nuniqueness lock record (SystemState) to prevent race conditions.",
         "operationId": "setup_initial_admin_api_v1_auth_setup_post",
         "requestBody": {
           "content": {
@@ -139,7 +139,7 @@
           "Authentication"
         ],
         "summary": "Logout",
-        "description": "Clear session and CSRF cookies.",
+        "description": "Clear session and CSRF cookies using matching paths and security attributes.",
         "operationId": "logout_api_v1_auth_logout_post",
         "responses": {
           "200": {
@@ -199,6 +199,262 @@
         }
       }
     },
+    "/api/v1/ai/plan": {
+      "post": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Generate Book Plan",
+        "description": "Generate a structured publishing plan, chapter outlines, and page budget.\nProtected by authentication and CSRF validation.",
+        "operationId": "generate_book_plan_api_v1_ai_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIResponseEnvelope_BookPlanResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/metadata": {
+      "post": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Generate Metadata",
+        "description": "Generate 1 to 7 KDP search keywords, categories, and conservative HTML description.\nProtected by authentication and CSRF validation.",
+        "operationId": "generate_metadata_api_v1_ai_metadata_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIResponseEnvelope_KDPMetadataResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/disclosure/confirm": {
+      "post": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Confirm Ai Disclosure",
+        "description": "Persist server-verified author attestation.\nDerived fields (user_id, timestamp, author_reviewed) are stamped exclusively by the backend.",
+        "operationId": "confirm_ai_disclosure_api_v1_ai_disclosure_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIDisclosureConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIDisclosureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/disclosure/latest": {
+      "get": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Get Latest Disclosure",
+        "description": "Retrieve the most recent confirmed attestation for the authenticated user.\nAuthentication required; no CSRF required for safe GET method.",
+        "operationId": "get_latest_disclosure_api_v1_ai_disclosure_latest_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIDisclosureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/validate/print-specs": {
+      "post": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Validate Print Specs",
+        "description": "Validate print specifications against the verified KDP specification matrix.\nProtected by authentication and CSRF.",
+        "operationId": "validate_print_specs_api_v1_ai_validate_print_specs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrintSpecsValidationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/validate/metadata": {
+      "post": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Validate Metadata",
+        "description": "Validate title/subtitle length, keyword count, and HTML description tags.\nProtected by authentication and CSRF.",
+        "operationId": "validate_metadata_api_v1_ai_validate_metadata_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataValidationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/specs": {
+      "get": {
+        "tags": [
+          "AI Publishing Engine"
+        ],
+        "summary": "Get Kdp Specifications",
+        "description": "Public catalog endpoint returning active versioned KDP specification metadata.\nPublic and unauthenticated; exposes no user data or secrets.",
+        "operationId": "get_kdp_specifications_api_v1_ai_specs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Kdp Specifications Api V1 Ai Specs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -218,6 +474,332 @@
   },
   "components": {
     "schemas": {
+      "AIDisclosureConfirmRequest": {
+        "properties": {
+          "text_creation_method": {
+            "type": "string",
+            "enum": [
+              "ai_generated",
+              "ai_assisted",
+              "none"
+            ],
+            "title": "Text Creation Method"
+          },
+          "text_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Text Tools Used"
+          },
+          "text_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none_or_minimal",
+                  "some_editing",
+                  "extensive_editing"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Editing Extent"
+          },
+          "image_creation_method": {
+            "type": "string",
+            "enum": [
+              "ai_generated",
+              "ai_assisted",
+              "none"
+            ],
+            "title": "Image Creation Method"
+          },
+          "image_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Image Tools Used"
+          },
+          "image_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none_or_minimal",
+                  "some_editing",
+                  "extensive_editing"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Editing Extent"
+          },
+          "translation_creation_method": {
+            "type": "string",
+            "enum": [
+              "ai_generated",
+              "ai_assisted",
+              "none"
+            ],
+            "title": "Translation Creation Method"
+          },
+          "translation_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Translation Tools Used"
+          },
+          "translation_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none_or_minimal",
+                  "some_editing",
+                  "extensive_editing"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Translation Editing Extent"
+          },
+          "author_confirmed": {
+            "type": "boolean",
+            "title": "Author Confirmed",
+            "description": "Must explicitly be True."
+          }
+        },
+        "type": "object",
+        "required": [
+          "text_creation_method",
+          "image_creation_method",
+          "translation_creation_method",
+          "author_confirmed"
+        ],
+        "title": "AIDisclosureConfirmRequest"
+      },
+      "AIDisclosureResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "disclosure_version": {
+            "type": "string",
+            "title": "Disclosure Version"
+          },
+          "text_creation_method": {
+            "type": "string",
+            "title": "Text Creation Method"
+          },
+          "text_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Text Tools Used"
+          },
+          "text_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Editing Extent"
+          },
+          "image_creation_method": {
+            "type": "string",
+            "title": "Image Creation Method"
+          },
+          "image_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Image Tools Used"
+          },
+          "image_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Editing Extent"
+          },
+          "translation_creation_method": {
+            "type": "string",
+            "title": "Translation Creation Method"
+          },
+          "translation_tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Translation Tools Used"
+          },
+          "translation_editing_extent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Translation Editing Extent"
+          },
+          "kdp_submission_declaration": {
+            "type": "string",
+            "title": "Kdp Submission Declaration"
+          },
+          "author_reviewed": {
+            "type": "boolean",
+            "title": "Author Reviewed"
+          },
+          "author_attested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Attested At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "disclosure_version",
+          "text_creation_method",
+          "text_tools_used",
+          "image_creation_method",
+          "image_tools_used",
+          "translation_creation_method",
+          "translation_tools_used",
+          "kdp_submission_declaration",
+          "author_reviewed",
+          "created_at"
+        ],
+        "title": "AIDisclosureResponse"
+      },
+      "AIExecutionMetadata": {
+        "properties": {
+          "requested_provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "gemini"
+            ],
+            "title": "Requested Provider"
+          },
+          "actual_provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "gemini"
+            ],
+            "title": "Actual Provider"
+          },
+          "is_mock_generated": {
+            "type": "boolean",
+            "title": "Is Mock Generated"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "execution_duration_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Execution Duration Ms",
+            "default": 0
+          },
+          "is_fallback": {
+            "type": "boolean",
+            "title": "Is Fallback",
+            "default": false
+          },
+          "fallback_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requested_provider",
+          "actual_provider",
+          "is_mock_generated",
+          "model_name"
+        ],
+        "title": "AIExecutionMetadata"
+      },
+      "AIResponseEnvelope_BookPlanResponse_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BookPlanResponse"
+          },
+          "telemetry": {
+            "$ref": "#/components/schemas/AIExecutionMetadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "telemetry"
+        ],
+        "title": "AIResponseEnvelope[BookPlanResponse]"
+      },
+      "AIResponseEnvelope_KDPMetadataResponse_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/KDPMetadataResponse"
+          },
+          "telemetry": {
+            "$ref": "#/components/schemas/AIExecutionMetadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "telemetry"
+        ],
+        "title": "AIResponseEnvelope[KDPMetadataResponse]"
+      },
       "AuthStatusResponse": {
         "properties": {
           "authenticated": {
@@ -241,6 +823,174 @@
         ],
         "title": "AuthStatusResponse"
       },
+      "BookPlanRequest": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Topic"
+          },
+          "target_audience": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Target Audience"
+          },
+          "book_type": {
+            "type": "string",
+            "enum": [
+              "NON_FICTION",
+              "LOW_CONTENT",
+              "GUIDE"
+            ],
+            "title": "Book Type",
+            "default": "NON_FICTION"
+          },
+          "print_format": {
+            "type": "string",
+            "enum": [
+              "paperback",
+              "hardcover"
+            ],
+            "title": "Print Format",
+            "default": "paperback"
+          },
+          "marketplace": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Marketplace",
+            "default": "amazon_com"
+          },
+          "target_trim_size": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Target Trim Size",
+            "default": "6x9"
+          },
+          "paper_type": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Paper Type",
+            "default": "white_bw"
+          },
+          "target_pages": {
+            "type": "integer",
+            "maximum": 3000.0,
+            "minimum": 1.0,
+            "title": "Target Pages",
+            "description": "Estimated target pages (validated dynamically against selected KDP spec)",
+            "default": 120
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic",
+          "target_audience"
+        ],
+        "title": "BookPlanRequest"
+      },
+      "BookPlanResponse": {
+        "properties": {
+          "title_options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Title Options"
+          },
+          "subtitle_options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Subtitle Options"
+          },
+          "target_reader_avatar": {
+            "type": "string",
+            "title": "Target Reader Avatar"
+          },
+          "front_matter_pages": {
+            "type": "integer",
+            "minimum": 2.0,
+            "title": "Front Matter Pages",
+            "default": 4
+          },
+          "chapters": {
+            "items": {
+              "$ref": "#/components/schemas/ChapterPlanItem"
+            },
+            "type": "array",
+            "title": "Chapters"
+          },
+          "back_matter_pages": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Back Matter Pages",
+            "default": 2
+          },
+          "total_calculated_pages": {
+            "type": "integer",
+            "title": "Total Calculated Pages"
+          },
+          "is_odd_page_count": {
+            "type": "boolean",
+            "title": "Is Odd Page Count"
+          },
+          "kdp_manufacturing_notice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kdp Manufacturing Notice"
+          },
+          "specification_matched": {
+            "type": "boolean",
+            "title": "Specification Matched",
+            "default": true
+          },
+          "spec_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spec Id"
+          },
+          "specification_advisory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specification Advisory"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title_options",
+          "subtitle_options",
+          "target_reader_avatar",
+          "chapters",
+          "total_calculated_pages",
+          "is_odd_page_count"
+        ],
+        "title": "BookPlanResponse"
+      },
       "CSRFResponse": {
         "properties": {
           "csrf_token": {
@@ -253,6 +1003,55 @@
           "csrf_token"
         ],
         "title": "CSRFResponse"
+      },
+      "ChapterPlanItem": {
+        "properties": {
+          "chapter_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Chapter Number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Summary"
+          },
+          "key_takeaways": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Takeaways"
+          },
+          "estimated_word_count": {
+            "type": "integer",
+            "maximum": 25000.0,
+            "minimum": 100.0,
+            "title": "Estimated Word Count"
+          },
+          "allocated_pages": {
+            "type": "integer",
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Allocated Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chapter_number",
+          "title",
+          "summary",
+          "estimated_word_count",
+          "allocated_pages"
+        ],
+        "title": "ChapterPlanItem"
       },
       "HTTPValidationError": {
         "properties": {
@@ -289,6 +1088,59 @@
           "version"
         ],
         "title": "HealthResponse"
+      },
+      "KDPMetadataResponse": {
+        "properties": {
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Keywords",
+            "description": "Between 1 and 7 high-intent KDP search keyword phrases."
+          },
+          "keyword_advisories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keyword Advisories"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Categories"
+          },
+          "description_html": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Description Html"
+          },
+          "plain_text_summary": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Plain Text Summary"
+          },
+          "unconfirmed_disclosure_recommendation": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Unconfirmed Disclosure Recommendation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "keywords",
+          "categories",
+          "description_html",
+          "plain_text_summary"
+        ],
+        "title": "KDPMetadataResponse"
       },
       "LoginRequest": {
         "properties": {
@@ -328,6 +1180,155 @@
         ],
         "title": "MessageResponse"
       },
+      "MetadataGenerateRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "topic_summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Topic Summary"
+          },
+          "target_audience": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Target Audience"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "topic_summary",
+          "target_audience"
+        ],
+        "title": "MetadataGenerateRequest"
+      },
+      "MetadataValidationRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "description_html": {
+            "type": "string",
+            "title": "Description Html",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "MetadataValidationRequest"
+      },
+      "PrintSpecsValidationRequest": {
+        "properties": {
+          "print_format": {
+            "type": "string",
+            "enum": [
+              "paperback",
+              "hardcover"
+            ],
+            "title": "Print Format",
+            "default": "paperback"
+          },
+          "trim_size": {
+            "type": "string",
+            "title": "Trim Size",
+            "description": "Trim size string, e.g. '6x9', '8.5x11'",
+            "default": "6x9"
+          },
+          "paper_type": {
+            "type": "string",
+            "title": "Paper Type",
+            "description": "Paper and ink option, e.g. 'white_bw', 'cream_bw', 'groundwood_bw', 'standard_color', 'premium_color'",
+            "default": "white_bw"
+          },
+          "page_count": {
+            "type": "integer",
+            "maximum": 5000.0,
+            "minimum": 1.0,
+            "title": "Page Count",
+            "description": "Total planned manuscript page count"
+          },
+          "has_bleed": {
+            "type": "boolean",
+            "title": "Has Bleed",
+            "default": false
+          },
+          "inside_margin_in": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inside Margin In",
+            "description": "Actual inside/gutter margin in inches"
+          },
+          "outside_margin_in": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outside Margin In",
+            "description": "Actual outside margin in inches"
+          },
+          "marketplace": {
+            "type": "string",
+            "title": "Marketplace",
+            "default": "amazon_com"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_count"
+        ],
+        "title": "PrintSpecsValidationRequest"
+      },
       "RegisterRequest": {
         "properties": {
           "email": {
@@ -354,6 +1355,43 @@
           "password"
         ],
         "title": "RegisterRequest"
+      },
+      "RuleViolation": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "BLOCKING_ERROR",
+              "ADVISORY_WARNING"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "reference_doc": {
+            "type": "string",
+            "title": "Reference Doc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_id",
+          "field",
+          "severity",
+          "message",
+          "reference_doc"
+        ],
+        "title": "RuleViolation"
       },
       "UserResponse": {
         "properties": {
@@ -433,6 +1471,66 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "ValidationResultResponse": {
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "title": "Is Valid"
+          },
+          "blocking_errors": {
+            "items": {
+              "$ref": "#/components/schemas/RuleViolation"
+            },
+            "type": "array",
+            "title": "Blocking Errors"
+          },
+          "advisory_warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RuleViolation"
+            },
+            "type": "array",
+            "title": "Advisory Warnings"
+          },
+          "applicable_page_count": {
+            "type": "integer",
+            "title": "Applicable Page Count"
+          },
+          "calculated_spine_width_in": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calculated Spine Width In"
+          },
+          "spine_text_allowed": {
+            "type": "boolean",
+            "title": "Spine Text Allowed",
+            "default": false
+          },
+          "matched_specification": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Specification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_valid",
+          "applicable_page_count"
+        ],
+        "title": "ValidationResultResponse"
       }
     }
   }

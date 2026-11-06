@@ -81,8 +81,10 @@ class Settings(BaseSettings):
     STORAGE_DIR: str = "./storage"
 
     # AI Configuration (Mock by default for zero-cost offline development)
-    AI_PROVIDER: str = "mock"
+    AI_PROVIDER: Literal["mock", "gemini"] = "mock"
     GEMINI_API_KEY: Optional[str] = None
+    AI_TIMEOUT_SECONDS: float = Field(default=30.0, gt=0.0, le=120.0)
+    AI_ALLOW_FALLBACK: bool = False  # Strictly False by default: NEVER silently fallback to mock
 
     @field_validator("SECRET_KEY", mode="before")
     @classmethod

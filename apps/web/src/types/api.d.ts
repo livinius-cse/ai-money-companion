@@ -57,7 +57,8 @@ export interface paths {
         /**
          * Setup Initial Admin
          * @description Bootstrap the initial root administrator account on first run.
-         *     Only permitted when no users exist in the database.
+         *     Uses database-level serialization (BEGIN IMMEDIATE on SQLite) and an atomic
+         *     uniqueness lock record (SystemState) to prevent race conditions.
          */
         post: operations["setup_initial_admin_api_v1_auth_setup_post"];
         delete?: never;
@@ -97,7 +98,7 @@ export interface paths {
         put?: never;
         /**
          * Logout
-         * @description Clear session and CSRF cookies.
+         * @description Clear session and CSRF cookies using matching paths and security attributes.
          */
         post: operations["logout_api_v1_auth_logout_post"];
         delete?: never;
@@ -146,6 +147,153 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Book Plan
+         * @description Generate a structured publishing plan, chapter outlines, and page budget.
+         *     Protected by authentication and CSRF validation.
+         */
+        post: operations["generate_book_plan_api_v1_ai_plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Metadata
+         * @description Generate 1 to 7 KDP search keywords, categories, and conservative HTML description.
+         *     Protected by authentication and CSRF validation.
+         */
+        post: operations["generate_metadata_api_v1_ai_metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/disclosure/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Ai Disclosure
+         * @description Persist server-verified author attestation.
+         *     Derived fields (user_id, timestamp, author_reviewed) are stamped exclusively by the backend.
+         */
+        post: operations["confirm_ai_disclosure_api_v1_ai_disclosure_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/disclosure/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Latest Disclosure
+         * @description Retrieve the most recent confirmed attestation for the authenticated user.
+         *     Authentication required; no CSRF required for safe GET method.
+         */
+        get: operations["get_latest_disclosure_api_v1_ai_disclosure_latest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/validate/print-specs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate Print Specs
+         * @description Validate print specifications against the verified KDP specification matrix.
+         *     Protected by authentication and CSRF.
+         */
+        post: operations["validate_print_specs_api_v1_ai_validate_print_specs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/validate/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate Metadata
+         * @description Validate title/subtitle length, keyword count, and HTML description tags.
+         *     Protected by authentication and CSRF.
+         */
+        post: operations["validate_metadata_api_v1_ai_validate_metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/specs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Kdp Specifications
+         * @description Public catalog endpoint returning active versioned KDP specification metadata.
+         *     Public and unauthenticated; exposes no user data or secrets.
+         */
+        get: operations["get_kdp_specifications_api_v1_ai_specs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/": {
         parameters: {
             query?: never;
@@ -167,16 +315,219 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AIDisclosureConfirmRequest */
+        AIDisclosureConfirmRequest: {
+            /**
+             * Text Creation Method
+             * @enum {string}
+             */
+            text_creation_method: "ai_generated" | "ai_assisted" | "none";
+            /** Text Tools Used */
+            text_tools_used?: string[];
+            /** Text Editing Extent */
+            text_editing_extent?: ("none_or_minimal" | "some_editing" | "extensive_editing") | null;
+            /**
+             * Image Creation Method
+             * @enum {string}
+             */
+            image_creation_method: "ai_generated" | "ai_assisted" | "none";
+            /** Image Tools Used */
+            image_tools_used?: string[];
+            /** Image Editing Extent */
+            image_editing_extent?: ("none_or_minimal" | "some_editing" | "extensive_editing") | null;
+            /**
+             * Translation Creation Method
+             * @enum {string}
+             */
+            translation_creation_method: "ai_generated" | "ai_assisted" | "none";
+            /** Translation Tools Used */
+            translation_tools_used?: string[];
+            /** Translation Editing Extent */
+            translation_editing_extent?: ("none_or_minimal" | "some_editing" | "extensive_editing") | null;
+            /**
+             * Author Confirmed
+             * @description Must explicitly be True.
+             */
+            author_confirmed: boolean;
+        };
+        /** AIDisclosureResponse */
+        AIDisclosureResponse: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** Disclosure Version */
+            disclosure_version: string;
+            /** Text Creation Method */
+            text_creation_method: string;
+            /** Text Tools Used */
+            text_tools_used: string[];
+            /** Text Editing Extent */
+            text_editing_extent?: string | null;
+            /** Image Creation Method */
+            image_creation_method: string;
+            /** Image Tools Used */
+            image_tools_used: string[];
+            /** Image Editing Extent */
+            image_editing_extent?: string | null;
+            /** Translation Creation Method */
+            translation_creation_method: string;
+            /** Translation Tools Used */
+            translation_tools_used: string[];
+            /** Translation Editing Extent */
+            translation_editing_extent?: string | null;
+            /** Kdp Submission Declaration */
+            kdp_submission_declaration: string;
+            /** Author Reviewed */
+            author_reviewed: boolean;
+            /** Author Attested At */
+            author_attested_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AIExecutionMetadata */
+        AIExecutionMetadata: {
+            /**
+             * Requested Provider
+             * @enum {string}
+             */
+            requested_provider: "mock" | "gemini";
+            /**
+             * Actual Provider
+             * @enum {string}
+             */
+            actual_provider: "mock" | "gemini";
+            /** Is Mock Generated */
+            is_mock_generated: boolean;
+            /** Model Name */
+            model_name: string;
+            /**
+             * Execution Duration Ms
+             * @default 0
+             */
+            execution_duration_ms: number;
+            /**
+             * Is Fallback
+             * @default false
+             */
+            is_fallback: boolean;
+            /** Fallback Reason */
+            fallback_reason?: string | null;
+        };
+        /** AIResponseEnvelope[BookPlanResponse] */
+        AIResponseEnvelope_BookPlanResponse_: {
+            data: components["schemas"]["BookPlanResponse"];
+            telemetry: components["schemas"]["AIExecutionMetadata"];
+        };
+        /** AIResponseEnvelope[KDPMetadataResponse] */
+        AIResponseEnvelope_KDPMetadataResponse_: {
+            data: components["schemas"]["KDPMetadataResponse"];
+            telemetry: components["schemas"]["AIExecutionMetadata"];
+        };
         /** AuthStatusResponse */
         AuthStatusResponse: {
             /** Authenticated */
             authenticated: boolean;
             user?: components["schemas"]["UserResponse"] | null;
         };
+        /** BookPlanRequest */
+        BookPlanRequest: {
+            /** Topic */
+            topic: string;
+            /** Target Audience */
+            target_audience: string;
+            /**
+             * Book Type
+             * @default NON_FICTION
+             * @enum {string}
+             */
+            book_type: "NON_FICTION" | "LOW_CONTENT" | "GUIDE";
+            /**
+             * Print Format
+             * @default paperback
+             * @enum {string}
+             */
+            print_format: "paperback" | "hardcover";
+            /**
+             * Marketplace
+             * @default amazon_com
+             */
+            marketplace: string;
+            /**
+             * Target Trim Size
+             * @default 6x9
+             */
+            target_trim_size: string;
+            /**
+             * Paper Type
+             * @default white_bw
+             */
+            paper_type: string;
+            /**
+             * Target Pages
+             * @description Estimated target pages (validated dynamically against selected KDP spec)
+             * @default 120
+             */
+            target_pages: number;
+        };
+        /** BookPlanResponse */
+        BookPlanResponse: {
+            /** Title Options */
+            title_options: string[];
+            /** Subtitle Options */
+            subtitle_options: string[];
+            /** Target Reader Avatar */
+            target_reader_avatar: string;
+            /**
+             * Front Matter Pages
+             * @default 4
+             */
+            front_matter_pages: number;
+            /** Chapters */
+            chapters: components["schemas"]["ChapterPlanItem"][];
+            /**
+             * Back Matter Pages
+             * @default 2
+             */
+            back_matter_pages: number;
+            /** Total Calculated Pages */
+            total_calculated_pages: number;
+            /** Is Odd Page Count */
+            is_odd_page_count: boolean;
+            /** Kdp Manufacturing Notice */
+            kdp_manufacturing_notice?: string | null;
+            /**
+             * Specification Matched
+             * @default true
+             */
+            specification_matched: boolean;
+            /** Spec Id */
+            spec_id?: string | null;
+            /** Specification Advisory */
+            specification_advisory?: string | null;
+        };
         /** CSRFResponse */
         CSRFResponse: {
             /** Csrf Token */
             csrf_token: string;
+        };
+        /** ChapterPlanItem */
+        ChapterPlanItem: {
+            /** Chapter Number */
+            chapter_number: number;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /** Key Takeaways */
+            key_takeaways?: string[];
+            /** Estimated Word Count */
+            estimated_word_count: number;
+            /** Allocated Pages */
+            allocated_pages: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -191,6 +542,26 @@ export interface components {
             project: string;
             /** Version */
             version: string;
+        };
+        /** KDPMetadataResponse */
+        KDPMetadataResponse: {
+            /**
+             * Keywords
+             * @description Between 1 and 7 high-intent KDP search keyword phrases.
+             */
+            keywords: string[];
+            /** Keyword Advisories */
+            keyword_advisories?: string[];
+            /** Categories */
+            categories: string[];
+            /** Description Html */
+            description_html: string;
+            /** Plain Text Summary */
+            plain_text_summary: string;
+            /** Unconfirmed Disclosure Recommendation */
+            unconfirmed_disclosure_recommendation?: {
+                [key: string]: unknown;
+            };
         };
         /** LoginRequest */
         LoginRequest: {
@@ -212,6 +583,77 @@ export interface components {
              */
             success: boolean;
         };
+        /** MetadataGenerateRequest */
+        MetadataGenerateRequest: {
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle?: string | null;
+            /** Topic Summary */
+            topic_summary: string;
+            /** Target Audience */
+            target_audience: string;
+        };
+        /** MetadataValidationRequest */
+        MetadataValidationRequest: {
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle?: string | null;
+            /** Keywords */
+            keywords?: string[];
+            /**
+             * Description Html
+             * @default
+             */
+            description_html: string;
+        };
+        /** PrintSpecsValidationRequest */
+        PrintSpecsValidationRequest: {
+            /**
+             * Print Format
+             * @default paperback
+             * @enum {string}
+             */
+            print_format: "paperback" | "hardcover";
+            /**
+             * Trim Size
+             * @description Trim size string, e.g. '6x9', '8.5x11'
+             * @default 6x9
+             */
+            trim_size: string;
+            /**
+             * Paper Type
+             * @description Paper and ink option, e.g. 'white_bw', 'cream_bw', 'groundwood_bw', 'standard_color', 'premium_color'
+             * @default white_bw
+             */
+            paper_type: string;
+            /**
+             * Page Count
+             * @description Total planned manuscript page count
+             */
+            page_count: number;
+            /**
+             * Has Bleed
+             * @default false
+             */
+            has_bleed: boolean;
+            /**
+             * Inside Margin In
+             * @description Actual inside/gutter margin in inches
+             */
+            inside_margin_in?: number | null;
+            /**
+             * Outside Margin In
+             * @description Actual outside margin in inches
+             */
+            outside_margin_in?: number | null;
+            /**
+             * Marketplace
+             * @default amazon_com
+             */
+            marketplace: string;
+        };
         /** RegisterRequest */
         RegisterRequest: {
             /**
@@ -229,6 +671,22 @@ export interface components {
              * @default
              */
             full_name: string;
+        };
+        /** RuleViolation */
+        RuleViolation: {
+            /** Rule Id */
+            rule_id: string;
+            /** Field */
+            field: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "BLOCKING_ERROR" | "ADVISORY_WARNING";
+            /** Message */
+            message: string;
+            /** Reference Doc */
+            reference_doc: string;
         };
         /** UserResponse */
         UserResponse: {
@@ -260,6 +718,28 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** ValidationResultResponse */
+        ValidationResultResponse: {
+            /** Is Valid */
+            is_valid: boolean;
+            /** Blocking Errors */
+            blocking_errors?: components["schemas"]["RuleViolation"][];
+            /** Advisory Warnings */
+            advisory_warnings?: components["schemas"]["RuleViolation"][];
+            /** Applicable Page Count */
+            applicable_page_count: number;
+            /** Calculated Spine Width In */
+            calculated_spine_width_in?: number | null;
+            /**
+             * Spine Text Allowed
+             * @default false
+             */
+            spine_text_allowed: boolean;
+            /** Matched Specification */
+            matched_specification?: {
+                [key: string]: unknown;
+            } | null;
         };
     };
     responses: never;
@@ -432,6 +912,213 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthStatusResponse"];
+                };
+            };
+        };
+    };
+    generate_book_plan_api_v1_ai_plan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIResponseEnvelope_BookPlanResponse_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_metadata_api_v1_ai_metadata_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataGenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIResponseEnvelope_KDPMetadataResponse_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_ai_disclosure_api_v1_ai_disclosure_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIDisclosureConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIDisclosureResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_latest_disclosure_api_v1_ai_disclosure_latest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIDisclosureResponse"];
+                };
+            };
+        };
+    };
+    validate_print_specs_api_v1_ai_validate_print_specs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintSpecsValidationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationResultResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_metadata_api_v1_ai_validate_metadata_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataValidationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationResultResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_kdp_specifications_api_v1_ai_specs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
