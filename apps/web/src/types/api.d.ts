@@ -57,8 +57,8 @@ export interface paths {
         /**
          * Setup Initial Admin
          * @description Bootstrap the initial root administrator account on first run.
-         *     Uses database-level serialization (BEGIN IMMEDIATE on SQLite) and an atomic
-         *     uniqueness lock record (SystemState) to prevent race conditions.
+         *     Uses process-level mutex and database-level serialization (BEGIN IMMEDIATE on SQLite)
+         *     with an atomic uniqueness lock record (SystemState) to prevent race conditions.
          */
         post: operations["setup_initial_admin_api_v1_auth_setup_post"];
         delete?: never;
@@ -294,6 +294,367 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Books
+         * @description List all books owned by the authenticated user.
+         */
+        get: operations["list_books_api_v1_books_get"];
+        put?: never;
+        /**
+         * Create Book
+         * @description Create a new book concept in Product Studio.
+         */
+        post: operations["create_book_api_v1_books_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Book
+         * @description Retrieve detailed book information by ID.
+         */
+        get: operations["get_book_api_v1_books__book_id__get"];
+        /**
+         * Update Book
+         * @description Update book concept, positioning, or KDP manufacturing parameters.
+         */
+        put: operations["update_book_api_v1_books__book_id__put"];
+        post?: never;
+        /**
+         * Delete Book
+         * @description Permanently delete a book draft and its cascaded chapters/illustrations.
+         */
+        delete: operations["delete_book_api_v1_books__book_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/plan/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Plan For Book
+         * @description Generate a structured chapter and page plan based on the book's current concept.
+         */
+        post: operations["generate_plan_for_book_api_v1_books__book_id__plan_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/plan/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Plan To Book
+         * @description Persist an accepted book plan: updates book title/metadata, front/back matter pages,
+         *     and replaces or updates the chapters table in an atomic transaction.
+         */
+        post: operations["apply_plan_to_book_api_v1_books__book_id__plan_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Chapters
+         * @description List all chapters for a given book ordered sequentially.
+         */
+        get: operations["list_chapters_api_v1_books__book_id__chapters_get"];
+        put?: never;
+        /**
+         * Create Chapter
+         * @description Create a new chapter within the book.
+         */
+        post: operations["create_chapter_api_v1_books__book_id__chapters_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters/{chapter_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Chapter
+         * @description Retrieve full chapter details and Markdown content.
+         */
+        get: operations["get_chapter_api_v1_books__book_id__chapters__chapter_id__get"];
+        /**
+         * Update Chapter
+         * @description Save chapter edits, update Markdown content, and recalculate word count.
+         */
+        put: operations["update_chapter_api_v1_books__book_id__chapters__chapter_id__put"];
+        post?: never;
+        /**
+         * Delete Chapter
+         * @description Delete a chapter from the book.
+         */
+        delete: operations["delete_chapter_api_v1_books__book_id__chapters__chapter_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reorder Chapters
+         * @description Atomically reorder chapters by updating their sequential numbering.
+         */
+        post: operations["reorder_chapters_api_v1_books__book_id__chapters_reorder_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft Chapter Content
+         * @description Generate an AI manuscript draft for the chapter.
+         *     Does NOT overwrite the database content automatically: returns draft for user review.
+         */
+        post: operations["draft_chapter_content_api_v1_books__book_id__chapters__chapter_id__draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/expand-section": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Expand Chapter Section
+         * @description Expand a specific section of the manuscript with practical depth.
+         */
+        post: operations["expand_chapter_section_api_v1_books__book_id__chapters__chapter_id__expand_section_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/regenerate-section": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Regenerate Chapter Section
+         * @description Regenerate a specific section with alternative instructions.
+         */
+        post: operations["regenerate_chapter_section_api_v1_books__book_id__chapters__chapter_id__regenerate_section_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Illustrations
+         * @description List all illustrations and visual placeholders for a book.
+         */
+        get: operations["list_illustrations_api_v1_books__book_id__illustrations_get"];
+        put?: never;
+        /**
+         * Create Illustration
+         * @description Create a new illustration prompt or reserved layout placeholder.
+         */
+        post: operations["create_illustration_api_v1_books__book_id__illustrations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations/generate-prompts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Illustration Prompts
+         * @description Generate cohesive illustration prompts using AI based on book and chapter context.
+         */
+        post: operations["generate_illustration_prompts_api_v1_books__book_id__illustrations_generate_prompts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Illustration
+         * @description Retrieve full details of an individual illustration record.
+         */
+        get: operations["get_illustration_api_v1_books__book_id__illustrations__illustration_id__get"];
+        /**
+         * Update Illustration
+         * @description Update prompt text, description, position, or style preset.
+         */
+        put: operations["update_illustration_api_v1_books__book_id__illustrations__illustration_id__put"];
+        post?: never;
+        /**
+         * Delete Illustration
+         * @description Delete an illustration record and safely delete its file asset from private storage.
+         */
+        delete: operations["delete_illustration_api_v1_books__book_id__illustrations__illustration_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Illustration Status
+         * @description Transition illustration lifecycle status with strict state machine rules.
+         *     Transitions to APPROVED_FINAL require an image asset and explicit human approval.
+         */
+        patch: operations["update_illustration_status_api_v1_books__book_id__illustrations__illustration_id__status_patch"];
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Illustration Asset
+         * @description Securely upload an image asset for an illustration placeholder.
+         *     Validates magic byte signatures, computes SHA-256, and stores in private local storage.
+         *     Automatically transitions status to GENERATED with asset_source='MANUAL_UPLOAD'.
+         */
+        post: operations["upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Illustration Asset
+         * @description Stream private image asset with strict ownership authorization and cache controls.
+         */
+        get: operations["get_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__asset_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/": {
         parameters: {
             query?: never;
@@ -427,11 +788,109 @@ export interface components {
             data: components["schemas"]["KDPMetadataResponse"];
             telemetry: components["schemas"]["AIExecutionMetadata"];
         };
+        /** ApplyPlanRequest */
+        ApplyPlanRequest: {
+            /** Selected Title */
+            selected_title: string;
+            /** Selected Subtitle */
+            selected_subtitle?: string | null;
+            /** Target Reader Avatar */
+            target_reader_avatar?: string | null;
+            /**
+             * Front Matter Pages
+             * @default 4
+             */
+            front_matter_pages: number;
+            /**
+             * Back Matter Pages
+             * @default 2
+             */
+            back_matter_pages: number;
+            /** Chapters */
+            chapters: components["schemas"]["ChapterPlanItem"][];
+        };
         /** AuthStatusResponse */
         AuthStatusResponse: {
             /** Authenticated */
             authenticated: boolean;
             user?: components["schemas"]["UserResponse"] | null;
+        };
+        /** Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post */
+        Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post: {
+            /** File */
+            file: string;
+        };
+        /** BookCreate */
+        BookCreate: {
+            /**
+             * Title
+             * @description Book main title
+             */
+            title: string;
+            /**
+             * Subtitle
+             * @description Optional book subtitle
+             */
+            subtitle?: string | null;
+            /**
+             * Topic
+             * @description Core topic or niche of the book
+             */
+            topic: string;
+            /**
+             * Book Concept
+             * @description Detailed concept and premise
+             */
+            book_concept?: string | null;
+            /**
+             * Target Audience
+             * @description Primary audience
+             */
+            target_audience?: string | null;
+            /**
+             * Target Reader Profile
+             * @description Reader persona/avatar description
+             */
+            target_reader_profile?: string | null;
+            /**
+             * Book Type
+             * @default non_fiction
+             * @enum {string}
+             */
+            book_type: "non_fiction" | "fiction" | "workbook" | "journal";
+            /**
+             * Print Format
+             * @default paperback
+             * @enum {string}
+             */
+            print_format: "paperback" | "hardcover";
+            /**
+             * Marketplace
+             * @default amazon_com
+             */
+            marketplace: string;
+            /**
+             * Trim Size
+             * @default 6x9
+             */
+            trim_size: string;
+            /**
+             * Paper Type
+             * @default white_bw
+             */
+            paper_type: string;
+            /**
+             * Target Page Count
+             * @default 100
+             */
+            target_page_count: number;
+        };
+        /** BookListResponse */
+        BookListResponse: {
+            /** Items */
+            items: components["schemas"]["BookResponse"][];
+            /** Total */
+            total: number;
         };
         /** BookPlanRequest */
         BookPlanRequest: {
@@ -509,10 +968,153 @@ export interface components {
             /** Specification Advisory */
             specification_advisory?: string | null;
         };
+        /** BookResponse */
+        BookResponse: {
+            /** Id */
+            id: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle?: string | null;
+            /** Topic */
+            topic: string;
+            /** Book Concept */
+            book_concept?: string | null;
+            /** Target Audience */
+            target_audience?: string | null;
+            /** Target Reader Profile */
+            target_reader_profile?: string | null;
+            /** Book Type */
+            book_type: string;
+            /** Print Format */
+            print_format: string;
+            /** Marketplace */
+            marketplace: string;
+            /** Trim Size */
+            trim_size: string;
+            /** Paper Type */
+            paper_type: string;
+            /** Target Page Count */
+            target_page_count: number;
+            /** Status */
+            status: string;
+            /** Front Matter Pages */
+            front_matter_pages: number;
+            /** Back Matter Pages */
+            back_matter_pages: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Chapter Count
+             * @default 0
+             */
+            chapter_count: number;
+            /**
+             * Total Allocated Pages
+             * @default 0
+             */
+            total_allocated_pages: number;
+            /**
+             * Total Word Count
+             * @default 0
+             */
+            total_word_count: number;
+            /**
+             * Illustration Count
+             * @default 0
+             */
+            illustration_count: number;
+        };
+        /** BookUpdate */
+        BookUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Subtitle */
+            subtitle?: string | null;
+            /** Topic */
+            topic?: string | null;
+            /** Book Concept */
+            book_concept?: string | null;
+            /** Target Audience */
+            target_audience?: string | null;
+            /** Target Reader Profile */
+            target_reader_profile?: string | null;
+            /** Book Type */
+            book_type?: string | null;
+            /** Print Format */
+            print_format?: string | null;
+            /** Marketplace */
+            marketplace?: string | null;
+            /** Trim Size */
+            trim_size?: string | null;
+            /** Paper Type */
+            paper_type?: string | null;
+            /** Target Page Count */
+            target_page_count?: number | null;
+            /** Status */
+            status?: string | null;
+            /** Front Matter Pages */
+            front_matter_pages?: number | null;
+            /** Back Matter Pages */
+            back_matter_pages?: number | null;
+        };
         /** CSRFResponse */
         CSRFResponse: {
             /** Csrf Token */
             csrf_token: string;
+        };
+        /** ChapterCreate */
+        ChapterCreate: {
+            /**
+             * Chapter Number
+             * @description Sequential chapter order number
+             * @default 1
+             */
+            chapter_number: number;
+            /**
+             * Chapter Type
+             * @default chapter
+             * @enum {string}
+             */
+            chapter_type: "front_matter" | "chapter" | "back_matter";
+            /**
+             * Title
+             * @description Chapter title
+             */
+            title: string;
+            /**
+             * Summary
+             * @description Chapter synopsis/summary
+             */
+            summary?: string | null;
+            /**
+             * Content
+             * @description Markdown manuscript content
+             * @default
+             */
+            content: string | null;
+            /**
+             * Allocated Pages
+             * @description Target page budget
+             * @default 10
+             */
+            allocated_pages: number;
+            /**
+             * Draft Status
+             * @default NOT_STARTED
+             * @enum {string}
+             */
+            draft_status: "NOT_STARTED" | "DRAFT" | "IN_PROGRESS" | "COMPLETED";
         };
         /** ChapterPlanItem */
         ChapterPlanItem: {
@@ -529,6 +1131,70 @@ export interface components {
             /** Allocated Pages */
             allocated_pages: number;
         };
+        /** ChapterReorderItem */
+        ChapterReorderItem: {
+            /** Chapter Id */
+            chapter_id: string;
+            /** Chapter Number */
+            chapter_number: number;
+        };
+        /** ChapterReorderRequest */
+        ChapterReorderRequest: {
+            /** Reordered Chapters */
+            reordered_chapters: components["schemas"]["ChapterReorderItem"][];
+        };
+        /** ChapterResponse */
+        ChapterResponse: {
+            /** Id */
+            id: string;
+            /** Book Id */
+            book_id: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Chapter Number */
+            chapter_number: number;
+            /** Chapter Type */
+            chapter_type: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary?: string | null;
+            /** Content */
+            content: string;
+            /** Allocated Pages */
+            allocated_pages: number;
+            /** Word Count */
+            word_count: number;
+            /** Estimated Reading Minutes */
+            estimated_reading_minutes: number;
+            /** Draft Status */
+            draft_status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ChapterUpdate */
+        ChapterUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Summary */
+            summary?: string | null;
+            /** Content */
+            content?: string | null;
+            /** Allocated Pages */
+            allocated_pages?: number | null;
+            /** Chapter Type */
+            chapter_type?: ("front_matter" | "chapter" | "back_matter") | null;
+            /** Draft Status */
+            draft_status?: ("NOT_STARTED" | "DRAFT" | "IN_PROGRESS" | "COMPLETED") | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -542,6 +1208,140 @@ export interface components {
             project: string;
             /** Version */
             version: string;
+        };
+        /** IllustrationCreate */
+        IllustrationCreate: {
+            /** Chapter Id */
+            chapter_id?: string | null;
+            /**
+             * Prompt
+             * @description Detailed generation or creative prompt
+             */
+            prompt: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Style Preset
+             * @default modern_clean_vector
+             */
+            style_preset: string | null;
+            /** Seed */
+            seed?: string | null;
+            /** Position Description */
+            position_description?: string | null;
+            /**
+             * Status
+             * @default PROMPT
+             * @enum {string}
+             */
+            status: "PROMPT" | "PLACEHOLDER";
+        };
+        /** IllustrationPromptGenerateRequest */
+        IllustrationPromptGenerateRequest: {
+            /** Chapter Id */
+            chapter_id?: string | null;
+            /**
+             * Target Count
+             * @default 3
+             */
+            target_count: number;
+            /**
+             * Style Preset
+             * @default clean_minimalist_line_art
+             */
+            style_preset: string | null;
+            /** Visual Instructions */
+            visual_instructions?: string | null;
+        };
+        /** IllustrationPromptGenerateResponse */
+        IllustrationPromptGenerateResponse: {
+            /** Prompts */
+            prompts: components["schemas"]["IllustrationPromptItem"][];
+        };
+        /** IllustrationPromptItem */
+        IllustrationPromptItem: {
+            /** Prompt */
+            prompt: string;
+            /** Description */
+            description: string;
+            /** Style Preset */
+            style_preset: string;
+            /** Suggested Placement */
+            suggested_placement: string;
+        };
+        /** IllustrationResponse */
+        IllustrationResponse: {
+            /** Id */
+            id: string;
+            /** Book Id */
+            book_id: string;
+            /** Chapter Id */
+            chapter_id?: string | null;
+            /** Owner Id */
+            owner_id: string;
+            /** Prompt */
+            prompt: string;
+            /** Description */
+            description?: string | null;
+            /** Style Preset */
+            style_preset?: string | null;
+            /** Seed */
+            seed?: string | null;
+            /** Position Description */
+            position_description?: string | null;
+            /** Status */
+            status: string;
+            /** Storage Key */
+            storage_key?: string | null;
+            /** Mime Type */
+            mime_type?: string | null;
+            /** File Size Bytes */
+            file_size_bytes?: number | null;
+            /** Sha256 Hash */
+            sha256_hash?: string | null;
+            /** Asset Source */
+            asset_source?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** IllustrationStatusUpdate */
+        IllustrationStatusUpdate: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PROMPT" | "PLACEHOLDER" | "GENERATED" | "APPROVED_FINAL";
+            /**
+             * Human Approved
+             * @description Explicit approval confirmation by the publisher
+             * @default false
+             */
+            human_approved: boolean;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** IllustrationUpdate */
+        IllustrationUpdate: {
+            /** Chapter Id */
+            chapter_id?: string | null;
+            /** Prompt */
+            prompt?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Style Preset */
+            style_preset?: string | null;
+            /** Seed */
+            seed?: string | null;
+            /** Position Description */
+            position_description?: string | null;
         };
         /** KDPMetadataResponse */
         KDPMetadataResponse: {
@@ -572,6 +1372,47 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** ManuscriptDraftRequest */
+        ManuscriptDraftRequest: {
+            /**
+             * Target Words
+             * @description Desired word count budget
+             * @default 1500
+             */
+            target_words: number;
+            /**
+             * Tone
+             * @description Narrative tone
+             * @default authoritative_practical
+             */
+            tone: string | null;
+            /**
+             * Special Instructions
+             * @description Guidance or focus areas
+             */
+            special_instructions?: string | null;
+        };
+        /** ManuscriptDraftResponse */
+        ManuscriptDraftResponse: {
+            /** Chapter Title */
+            chapter_title: string;
+            /** Markdown Content */
+            markdown_content: string;
+            /** Word Count */
+            word_count: number;
+            /** Estimated Reading Minutes */
+            estimated_reading_minutes: number;
+            /**
+             * Is Draft
+             * @default true
+             */
+            is_draft: boolean;
+            /**
+             * Author Reviewed
+             * @default false
+             */
+            author_reviewed: boolean;
         };
         /** MessageResponse */
         MessageResponse: {
@@ -687,6 +1528,42 @@ export interface components {
             message: string;
             /** Reference Doc */
             reference_doc: string;
+        };
+        /** SectionExpandRequest */
+        SectionExpandRequest: {
+            /** Section Heading */
+            section_heading: string;
+            /** Current Text */
+            current_text: string;
+            /** Expansion Guidance */
+            expansion_guidance?: string | null;
+        };
+        /** SectionExpandResponse */
+        SectionExpandResponse: {
+            /** Section Heading */
+            section_heading: string;
+            /** Expanded Markdown */
+            expanded_markdown: string;
+            /** Word Count */
+            word_count: number;
+        };
+        /** SectionRegenerateRequest */
+        SectionRegenerateRequest: {
+            /** Section Heading */
+            section_heading: string;
+            /** Current Text */
+            current_text: string;
+            /** Alternative Instructions */
+            alternative_instructions?: string | null;
+        };
+        /** SectionRegenerateResponse */
+        SectionRegenerateResponse: {
+            /** Section Heading */
+            section_heading: string;
+            /** Regenerated Markdown */
+            regenerated_markdown: string;
+            /** Word Count */
+            word_count: number;
         };
         /** UserResponse */
         UserResponse: {
@@ -1119,6 +1996,830 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    list_books_api_v1_books_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookListResponse"];
+                };
+            };
+        };
+    };
+    create_book_api_v1_books_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_book_api_v1_books__book_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_book_api_v1_books__book_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_book_api_v1_books__book_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_plan_for_book_api_v1_books__book_id__plan_generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookPlanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_plan_to_book_api_v1_books__book_id__plan_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_chapters_api_v1_books__book_id__chapters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChapterResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_chapter_api_v1_books__book_id__chapters_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChapterCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChapterResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_chapter_api_v1_books__book_id__chapters__chapter_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChapterResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_chapter_api_v1_books__book_id__chapters__chapter_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChapterUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChapterResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_chapter_api_v1_books__book_id__chapters__chapter_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_chapters_api_v1_books__book_id__chapters_reorder_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChapterReorderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChapterResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_chapter_content_api_v1_books__book_id__chapters__chapter_id__draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManuscriptDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManuscriptDraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expand_chapter_section_api_v1_books__book_id__chapters__chapter_id__expand_section_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionExpandRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectionExpandResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regenerate_chapter_section_api_v1_books__book_id__chapters__chapter_id__regenerate_section_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                chapter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionRegenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectionRegenerateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_illustrations_api_v1_books__book_id__illustrations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_illustration_api_v1_books__book_id__illustrations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IllustrationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_illustration_prompts_api_v1_books__book_id__illustrations_generate_prompts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IllustrationPromptGenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationPromptGenerateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_illustration_api_v1_books__book_id__illustrations__illustration_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_illustration_api_v1_books__book_id__illustrations__illustration_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IllustrationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_illustration_api_v1_books__book_id__illustrations__illustration_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_illustration_status_api_v1_books__book_id__illustrations__illustration_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IllustrationStatusUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IllustrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__asset_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_id: string;
+                illustration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

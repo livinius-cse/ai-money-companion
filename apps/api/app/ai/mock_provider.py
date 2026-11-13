@@ -4,9 +4,23 @@ from typing import Type, TypeVar, Optional, Any
 from pydantic import BaseModel
 from app.ai.base import BaseAIProvider, AIResponseEnvelope, AIExecutionMetadata
 from app.ai.exceptions import AIProviderError, AITimeoutError, AIRateLimitError
-from app.ai.mock_fixtures import DEFAULT_PLANNING_FIXTURES, DEFAULT_METADATA_FIXTURES
+from app.ai.mock_fixtures import (
+    DEFAULT_PLANNING_FIXTURES,
+    DEFAULT_METADATA_FIXTURES,
+    DEFAULT_MANUSCRIPT_FIXTURES,
+    DEFAULT_ILLUSTRATION_PROMPT_FIXTURES,
+)
 from app.schemas.planning import BookPlanResponse
 from app.schemas.metadata import KDPMetadataResponse
+from app.schemas.manuscript import (
+    ManuscriptDraftResponse,
+    SectionExpandResponse,
+    SectionRegenerateResponse,
+)
+from app.schemas.illustration import (
+    IllustrationPromptGenerateResponse,
+    IllustrationPromptItem,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -112,6 +126,49 @@ class MockAIProvider(BaseAIProvider):
                 plain_text_summary=fix["plain_text_summary"],
                 unconfirmed_disclosure_recommendation=fix["unconfirmed_disclosure_recommendation"],
             )
+        elif issubclass(response_model, ManuscriptDraftResponse):
+            fix = DEFAULT_MANUSCRIPT_FIXTURES.get(topic_key, DEFAULT_MANUSCRIPT_FIXTURES["default"])
+            content = fix["markdown_content"]
+            words = len(content.split())
+            reading_mins = max(1, round(words / 200))
+            data = ManuscriptDraftResponse(
+                chapter_title=fix["chapter_title"],
+                markdown_content=content,
+                word_count=words,
+                estimated_reading_minutes=reading_mins,
+                is_draft=True,
+                author_reviewed=False,
+            )
+        elif issubclass(response_model, SectionExpandResponse):
+            expanded_text = (
+                f"### Detailed Operational Deep-Dive\n\n"
+                f"Expanding upon the foundational concepts with practical implementation protocols. "
+                f"Key factors to consider include cadence, automated checks, and systematic friction reduction. "
+                f"By institutionalizing these steps into a 7-day checklist, progress remains steady and measurable.\n\n"
+                f"1. **Pre-execution verification:** Confirm dependencies and baselines.\n"
+                f"2. **Continuous alignment:** Run weekly audits against planned targets.\n"
+                f"3. **Milestone celebration:** Reinforce behavioral adherence."
+            )
+            data = SectionExpandResponse(
+                section_heading="Expanded Section",
+                expanded_markdown=expanded_text,
+                word_count=len(expanded_text.split()),
+            )
+        elif issubclass(response_model, SectionRegenerateResponse):
+            regen_text = (
+                f"### Strategic Restructuring\n\n"
+                f"A refined analytical approach to this section emphasizing practical efficiency and cognitive clarity. "
+                f"Rather than reactive problem solving, establish proactive environmental safeguards that eliminate friction at the source."
+            )
+            data = SectionRegenerateResponse(
+                section_heading="Regenerated Section",
+                regenerated_markdown=regen_text,
+                word_count=len(regen_text.split()),
+            )
+        elif issubclass(response_model, IllustrationPromptGenerateResponse):
+            fix_prompts = DEFAULT_ILLUSTRATION_PROMPT_FIXTURES.get(topic_key, DEFAULT_ILLUSTRATION_PROMPT_FIXTURES["default"])
+            items = [IllustrationPromptItem(**p) for p in fix_prompts]
+            data = IllustrationPromptGenerateResponse(prompts=items)
         else:
             # Fallback for generic models
             data = response_model.model_validate({})

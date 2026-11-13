@@ -35,3 +35,12 @@ class BookPlanResponse(BaseModel):
     specification_matched: bool = True
     spec_id: Optional[str] = None
     specification_advisory: Optional[str] = None
+
+
+class ApplyPlanRequest(BaseModel):
+    selected_title: str = Field(..., min_length=1, max_length=255)
+    selected_subtitle: Optional[str] = Field(default=None, max_length=255)
+    target_reader_avatar: Optional[str] = None
+    front_matter_pages: int = Field(default=4, ge=0, le=100)
+    back_matter_pages: int = Field(default=2, ge=0, le=100)
+    chapters: List[ChapterPlanItem]

@@ -210,3 +210,93 @@ DEFAULT_METADATA_FIXTURES = {
         },
     },
 }
+
+
+DEFAULT_MANUSCRIPT_FIXTURES = {
+    "finance": {
+        "chapter_title": "Taking Stock: The Reality Check Audit",
+        "markdown_content": (
+            "# Taking Stock: The Reality Check Audit\n\n"
+            "Before you can direct your money toward long-term wealth, you must confront exactly where it stands today. "
+            "Most people avoid this audit not because the math is complicated, but because financial anxiety thrives in ambiguity. "
+            "When numbers remain vague, they feel insurmountable. Once they are documented in black and white, they become manageable operational variables.\n\n"
+            "## 1. Establishing Your True Net Worth Baseline\n\n"
+            "Net worth is not an ego metric; it is your financial compass. Calculate it with complete objectivity:\n\n"
+            "- **Liquid Assets:** Checking accounts, high-yield savings, cash reserves.\n"
+            "- **Invested Assets:** Retirement accounts, brokerage accounts, employer matching contributions.\n"
+            "- **Short-Term Liabilities:** Credit card balances, personal lines of credit, buy-now-pay-later obligations.\n"
+            "- **Long-Term Liabilities:** Student loans, auto financing, mortgage balances.\n\n"
+            "> **The Golden Rule of Audits:** Treat your personal finances like the Chief Financial Officer of an enterprise. A CFO does not feel guilt about a quarterly deficit; they adjust the cash allocation matrix.\n\n"
+            "## 2. Tracking the 90-Day Cash Flow Leaks\n\n"
+            "A one-month budget is too short to account for quarterly billing cycles and irregular expenses. "
+            "Pull your bank statements and credit card activity for the last 90 days. Group your outflows into three precise categories:\n\n"
+            "1. **Fixed Survival Obligations:** Rent or mortgage, basic utilities, core groceries, minimum debt service.\n"
+            "2. **Frictionless Convenience Leaks:** Food delivery apps, subscription services you have not opened in 30 days, premium convenience fees.\n"
+            "3. **Intentional Discretionary Spending:** Meaningful dining with friends, books, hobbies, and wellness.\n\n"
+            "## 3. The 48-Hour Implementation Protocol\n\n"
+            "Do not attempt to overhaul your entire lifestyle overnight. Complete these three steps within 48 hours:\n\n"
+            "- **Cancel three zombie subscriptions:** Save an immediate $40-$100 per month.\n"
+            "- **Consolidate high-interest balances:** Identify the single card charging the highest APR.\n"
+            "- **Document your monthly baseline burn rate:** Know your exact minimum cost of living.\n\n"
+            "In the next chapter, we will turn this baseline into an automated anti-budget that routes your money before impulse can divert it."
+        ),
+    },
+    "default": {
+        "chapter_title": "First Principles: Establishing the Foundation",
+        "markdown_content": (
+            "# First Principles: Establishing the Foundation\n\n"
+            "Sustainable progress requires stripping away conventional assumptions and analyzing your operating environment from first principles. "
+            "When you understand the fundamental constraints, solutions become obvious and durable.\n\n"
+            "## 1. Defining the Core Operating System\n\n"
+            "Systems outperform willpower consistently. To construct an effective workflow:\n\n"
+            "- Identify the single highest-leverage recurring action.\n"
+            "- Remove friction between intention and execution.\n"
+            "- Establish rapid feedback loops to detect drift early.\n\n"
+            "## 2. Eliminating Unconscious Waste\n\n"
+            "Energy and attention are finite resources. Audit where cognitive overhead accumulates:\n\n"
+            "1. Unclear priorities that require repeated daily decision-making.\n"
+            "2. Fragmented communication channels.\n"
+            "3. Lack of documented standard procedures.\n\n"
+            "## 3. Actionable Next Steps\n\n"
+            "Focus on incremental, verifiable adjustments that compound over weeks rather than dramatic short-lived efforts."
+        ),
+    },
+}
+
+DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
+    "finance": [
+        {
+            "prompt": "Minimalist vector diagram showing the debt snowball method vs debt avalanche method, clean geometric shapes, professional finance editorial style, high contrast, white background.",
+            "description": "Visual comparison chart of snowball and avalanche debt repayment trajectories.",
+            "style_preset": "modern_clean_vector",
+            "suggested_placement": "Chapter 3: The Debt Elimination Engine",
+        },
+        {
+            "prompt": "Clean line-art infographic illustrating automated cash flow allocation: paycheck splitting into emergency savings, investment index fund, and fixed expenses.",
+            "description": "Flowchart diagram illustrating automated payday cash routing.",
+            "style_preset": "clean_minimalist_line_art",
+            "suggested_placement": "Chapter 2: The Anti-Budget",
+        },
+        {
+            "prompt": "Editorial charcoal and monochrome illustration of a focused professional reviewing a simple financial dashboard, elegant composition, crisp line work.",
+            "description": "Hero illustration representing the personal net worth reality check audit.",
+            "style_preset": "editorial_monochrome",
+            "suggested_placement": "Chapter 1: Taking Stock",
+        },
+    ],
+    "default": [
+        {
+            "prompt": "Modern architectural line-art concept representing strong foundational systems and upward compounding progress, clean vectors, high contrast.",
+            "description": "Foundational principles diagram illustrating systemic leverage.",
+            "style_preset": "modern_clean_vector",
+            "suggested_placement": "Chapter 1: First Principles",
+        },
+        {
+            "prompt": "Minimalist diagram of a continuous feedback loop and iterative optimization framework, monochrome, publication-ready vector style.",
+            "description": "Feedback loop optimization diagram.",
+            "style_preset": "clean_minimalist_line_art",
+            "suggested_placement": "Chapter 2: The Core Framework",
+        },
+    ],
+}
+

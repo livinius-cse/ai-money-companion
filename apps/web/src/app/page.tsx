@@ -3,9 +3,9 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { Navbar } from "@/components/navbar";
 import {
   BookOpen,
-  LogOut,
   ShieldCheck,
   Cpu,
   Database,
@@ -13,11 +13,15 @@ import {
   FolderLock,
   Layers,
   ArrowRight,
+  Library,
+  PenTool,
+  Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading, logout, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -25,7 +29,7 @@ export default function DashboardPage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-3">
@@ -36,68 +40,101 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold text-base text-white tracking-tight">AI Money Companion</span>
-              <span className="ml-2 text-xs text-amber-400/90 font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                KDP OS v1.0
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs font-medium text-white">{user.full_name || user.email}</p>
-              <p className="text-[11px] text-slate-400 font-mono">{user.email}</p>
-            </div>
-            {user.is_admin && (
-              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold px-2 py-0.5 rounded-md">
-                Admin
-              </span>
-            )}
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Milestone 1 Status Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-lg font-bold text-white">Milestone 1 Active: Core Foundations & Security</h2>
+        {/* Milestone 3 Hero Banner */}
+        <div className="bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border border-amber-500/30 rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  Milestone 3 Active: Product Studio & Content Engine
+                </h2>
               </div>
-              <p className="text-sm text-slate-400 max-w-2xl">
-                Monorepo architecture initialized. FastAPI backend and Next.js frontend are authenticated via
-                HttpOnly session cookies with signed CSRF defense and brute-force rate limiting.
+              <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+                Full-lifecycle publishing engine is live. Create book concepts, generate chapter page budgets,
+                draft manuscripts with offline AI assistance, and manage visual illustration assets.
               </p>
             </div>
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              All Security Checks Passed
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/books")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition"
+              >
+                <Library className="w-4 h-4" />
+                <span>Open Product Studio</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
             </div>
+          </div>
+        </div>
+
+        {/* Quick Studio Navigation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            onClick={() => router.push("/books")}
+            className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-6 space-y-3 cursor-pointer transition group shadow-lg"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 group-hover:text-amber-400 transition">
+                /books
+              </span>
+            </div>
+            <h3 className="font-bold text-base text-white group-hover:text-amber-400 transition">
+              Book Portfolio
+            </h3>
+            <p className="text-xs text-slate-400">
+              Manage your active KDP titles, track manuscript word counts, and review chapter page allocations.
+            </p>
+          </div>
+
+          <div
+            onClick={() => router.push("/books/new")}
+            className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-6 space-y-3 cursor-pointer transition group shadow-lg"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                <PenTool className="w-5 h-5" />
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 group-hover:text-cyan-400 transition">
+                /books/new
+              </span>
+            </div>
+            <h3 className="font-bold text-base text-white group-hover:text-cyan-400 transition">
+              New Book Wizard
+            </h3>
+            <p className="text-xs text-slate-400">
+              Launch a new publication with topic positioning, reader avatar definition, and verified KDP trim specs.
+            </p>
+          </div>
+
+          <div
+            onClick={() => router.push("/books")}
+            className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-6 space-y-3 cursor-pointer transition group shadow-lg"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 group-hover:text-emerald-400 transition">
+                Asset Hub
+              </span>
+            </div>
+            <h3 className="font-bold text-base text-white group-hover:text-emerald-400 transition">
+              Visual Asset Manager
+            </h3>
+            <p className="text-xs text-slate-400">
+              Upload high-resolution illustration assets, generate consistent visual prompts, and enforce sign-offs.
+            </p>
           </div>
         </div>
 
@@ -137,14 +174,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Milestone Roadmap Progression */}
+        {/* Milestone Execution Track */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-amber-400" />
             <span>KDP Publishing OS — Milestone Execution Track</span>
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="p-4 rounded-xl bg-slate-800/80 border border-emerald-500/40 space-y-1.5">
               <div className="flex items-center justify-between text-emerald-400 font-semibold">
                 <span>Milestone 1: Foundations & Auth</span>
@@ -153,44 +190,22 @@ export default function DashboardPage() {
               <p className="text-slate-400">Monorepo, Argon2 auth, HttpOnly cookies, signed CSRF, SQLite WAL.</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 opacity-70">
-              <div className="flex items-center justify-between text-slate-300 font-semibold">
-                <span>Milestone 2: Mock AI & Metadata</span>
-                <span className="text-[10px] text-amber-400 uppercase">Upcoming</span>
+            <div className="p-4 rounded-xl bg-slate-800/80 border border-emerald-500/40 space-y-1.5">
+              <div className="flex items-center justify-between text-emerald-400 font-semibold">
+                <span>Milestone 2: Mock AI & KDP Engine</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               </div>
-              <p className="text-slate-400">BaseAIProvider, 7 domain services, and versioned KDP specs.</p>
+              <p className="text-slate-400">Offline Mock AI, Gemini fallback governance, 79 paperback & 15 hardcover specs.</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 opacity-70">
-              <div className="flex items-center justify-between text-slate-300 font-semibold">
+            <div className="p-4 rounded-xl bg-slate-800/80 border border-amber-500/50 space-y-1.5">
+              <div className="flex items-center justify-between text-amber-400 font-semibold">
                 <span>Milestone 3: Product Studio</span>
-                <span className="text-[10px] text-slate-500 uppercase">Upcoming</span>
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded">
+                  ACTIVE
+                </span>
               </div>
-              <p className="text-slate-400">Concept to content, markdown editor, illustration asset grid.</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 opacity-70">
-              <div className="flex items-center justify-between text-slate-300 font-semibold">
-                <span>Milestone 4: WeasyPrint & Cover Math</span>
-                <span className="text-[10px] text-slate-500 uppercase">Upcoming</span>
-              </div>
-              <p className="text-slate-400">Interior layout, spine width formulas, and local PDF compilation.</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 opacity-70">
-              <div className="flex items-center justify-between text-slate-300 font-semibold">
-                <span>Milestone 5: Pre-Flight QA & 5-Way Seal</span>
-                <span className="text-[10px] text-slate-500 uppercase">Upcoming</span>
-              </div>
-              <p className="text-slate-400">Multi-asset SHA-256 cryptographic seal & automatic invalidation.</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 opacity-70">
-              <div className="flex items-center justify-between text-slate-300 font-semibold">
-                <span>Milestone 6: Package Exporter & Sales</span>
-                <span className="text-[10px] text-slate-500 uppercase">Upcoming</span>
-              </div>
-              <p className="text-slate-400">KDP ZIP bundle generator, manual royalty import, demo watermarking.</p>
+              <p className="text-slate-400">Book Concept, Page Planner, Markdown Content Studio, Illustration Studio.</p>
             </div>
           </div>
         </div>

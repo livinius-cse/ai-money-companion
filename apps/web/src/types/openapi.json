@@ -55,7 +55,7 @@
           "Authentication"
         ],
         "summary": "Setup Initial Admin",
-        "description": "Bootstrap the initial root administrator account on first run.\nUses database-level serialization (BEGIN IMMEDIATE on SQLite) and an atomic\nuniqueness lock record (SystemState) to prevent race conditions.",
+        "description": "Bootstrap the initial root administrator account on first run.\nUses process-level mutex and database-level serialization (BEGIN IMMEDIATE on SQLite)\nwith an atomic uniqueness lock record (SystemState) to prevent race conditions.",
         "operationId": "setup_initial_admin_api_v1_auth_setup_post",
         "requestBody": {
           "content": {
@@ -455,6 +455,1268 @@
         }
       }
     },
+    "/api/v1/books": {
+      "get": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "List Books",
+        "description": "List all books owned by the authenticated user.",
+        "operationId": "list_books_api_v1_books_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Create Book",
+        "description": "Create a new book concept in Product Studio.",
+        "operationId": "create_book_api_v1_books_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}": {
+      "get": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Get Book",
+        "description": "Retrieve detailed book information by ID.",
+        "operationId": "get_book_api_v1_books__book_id__get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Update Book",
+        "description": "Update book concept, positioning, or KDP manufacturing parameters.",
+        "operationId": "update_book_api_v1_books__book_id__put",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Delete Book",
+        "description": "Permanently delete a book draft and its cascaded chapters/illustrations.",
+        "operationId": "delete_book_api_v1_books__book_id__delete",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/plan/generate": {
+      "post": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Generate Plan For Book",
+        "description": "Generate a structured chapter and page plan based on the book's current concept.",
+        "operationId": "generate_plan_for_book_api_v1_books__book_id__plan_generate_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookPlanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/plan/apply": {
+      "post": {
+        "tags": [
+          "Books & Product Studio"
+        ],
+        "summary": "Apply Plan To Book",
+        "description": "Persist an accepted book plan: updates book title/metadata, front/back matter pages,\nand replaces or updates the chapters table in an atomic transaction.",
+        "operationId": "apply_plan_to_book_api_v1_books__book_id__plan_apply_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters": {
+      "get": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "List Chapters",
+        "description": "List all chapters for a given book ordered sequentially.",
+        "operationId": "list_chapters_api_v1_books__book_id__chapters_get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterResponse"
+                  },
+                  "title": "Response List Chapters Api V1 Books  Book Id  Chapters Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Create Chapter",
+        "description": "Create a new chapter within the book.",
+        "operationId": "create_chapter_api_v1_books__book_id__chapters_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters/{chapter_id}": {
+      "get": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Get Chapter",
+        "description": "Retrieve full chapter details and Markdown content.",
+        "operationId": "get_chapter_api_v1_books__book_id__chapters__chapter_id__get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Update Chapter",
+        "description": "Save chapter edits, update Markdown content, and recalculate word count.",
+        "operationId": "update_chapter_api_v1_books__book_id__chapters__chapter_id__put",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Delete Chapter",
+        "description": "Delete a chapter from the book.",
+        "operationId": "delete_chapter_api_v1_books__book_id__chapters__chapter_id__delete",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters/reorder": {
+      "post": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Reorder Chapters",
+        "description": "Atomically reorder chapters by updating their sequential numbering.",
+        "operationId": "reorder_chapters_api_v1_books__book_id__chapters_reorder_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterReorderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterResponse"
+                  },
+                  "title": "Response Reorder Chapters Api V1 Books  Book Id  Chapters Reorder Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/draft": {
+      "post": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Draft Chapter Content",
+        "description": "Generate an AI manuscript draft for the chapter.\nDoes NOT overwrite the database content automatically: returns draft for user review.",
+        "operationId": "draft_chapter_content_api_v1_books__book_id__chapters__chapter_id__draft_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManuscriptDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManuscriptDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/expand-section": {
+      "post": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Expand Chapter Section",
+        "description": "Expand a specific section of the manuscript with practical depth.",
+        "operationId": "expand_chapter_section_api_v1_books__book_id__chapters__chapter_id__expand_section_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SectionExpandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionExpandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/chapters/{chapter_id}/regenerate-section": {
+      "post": {
+        "tags": [
+          "Chapters & Content Studio"
+        ],
+        "summary": "Regenerate Chapter Section",
+        "description": "Regenerate a specific section with alternative instructions.",
+        "operationId": "regenerate_chapter_section_api_v1_books__book_id__chapters__chapter_id__regenerate_section_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chapter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SectionRegenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionRegenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations": {
+      "get": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "List Illustrations",
+        "description": "List all illustrations and visual placeholders for a book.",
+        "operationId": "list_illustrations_api_v1_books__book_id__illustrations_get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IllustrationResponse"
+                  },
+                  "title": "Response List Illustrations Api V1 Books  Book Id  Illustrations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Create Illustration",
+        "description": "Create a new illustration prompt or reserved layout placeholder.",
+        "operationId": "create_illustration_api_v1_books__book_id__illustrations_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IllustrationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations/generate-prompts": {
+      "post": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Generate Illustration Prompts",
+        "description": "Generate cohesive illustration prompts using AI based on book and chapter context.",
+        "operationId": "generate_illustration_prompts_api_v1_books__book_id__illustrations_generate_prompts_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IllustrationPromptGenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationPromptGenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}": {
+      "get": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Get Illustration",
+        "description": "Retrieve full details of an individual illustration record.",
+        "operationId": "get_illustration_api_v1_books__book_id__illustrations__illustration_id__get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Update Illustration",
+        "description": "Update prompt text, description, position, or style preset.",
+        "operationId": "update_illustration_api_v1_books__book_id__illustrations__illustration_id__put",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IllustrationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Delete Illustration",
+        "description": "Delete an illustration record and safely delete its file asset from private storage.",
+        "operationId": "delete_illustration_api_v1_books__book_id__illustrations__illustration_id__delete",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/status": {
+      "patch": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Update Illustration Status",
+        "description": "Transition illustration lifecycle status with strict state machine rules.\nTransitions to APPROVED_FINAL require an image asset and explicit human approval.",
+        "operationId": "update_illustration_status_api_v1_books__book_id__illustrations__illustration_id__status_patch",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IllustrationStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/upload": {
+      "post": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Upload Illustration Asset",
+        "description": "Securely upload an image asset for an illustration placeholder.\nValidates magic byte signatures, computes SHA-256, and stores in private local storage.\nAutomatically transitions status to GENERATED with asset_source='MANUAL_UPLOAD'.",
+        "operationId": "upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IllustrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{book_id}/illustrations/{illustration_id}/asset": {
+      "get": {
+        "tags": [
+          "Illustrations & Asset Management"
+        ],
+        "summary": "Get Illustration Asset",
+        "description": "Stream private image asset with strict ownership authorization and cache controls.",
+        "operationId": "get_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__asset_get",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Book Id"
+            }
+          },
+          {
+            "name": "illustration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Illustration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -800,6 +2062,66 @@
         ],
         "title": "AIResponseEnvelope[KDPMetadataResponse]"
       },
+      "ApplyPlanRequest": {
+        "properties": {
+          "selected_title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Selected Title"
+          },
+          "selected_subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Subtitle"
+          },
+          "target_reader_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Reader Avatar"
+          },
+          "front_matter_pages": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Front Matter Pages",
+            "default": 4
+          },
+          "back_matter_pages": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Back Matter Pages",
+            "default": 2
+          },
+          "chapters": {
+            "items": {
+              "$ref": "#/components/schemas/ChapterPlanItem"
+            },
+            "type": "array",
+            "title": "Chapters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selected_title",
+          "chapters"
+        ],
+        "title": "ApplyPlanRequest"
+      },
       "AuthStatusResponse": {
         "properties": {
           "authenticated": {
@@ -822,6 +2144,159 @@
           "authenticated"
         ],
         "title": "AuthStatusResponse"
+      },
+      "Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_illustration_asset_api_v1_books__book_id__illustrations__illustration_id__upload_post"
+      },
+      "BookCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Book main title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle",
+            "description": "Optional book subtitle"
+          },
+          "topic": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Topic",
+            "description": "Core topic or niche of the book"
+          },
+          "book_concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Book Concept",
+            "description": "Detailed concept and premise"
+          },
+          "target_audience": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Audience",
+            "description": "Primary audience"
+          },
+          "target_reader_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Reader Profile",
+            "description": "Reader persona/avatar description"
+          },
+          "book_type": {
+            "type": "string",
+            "enum": [
+              "non_fiction",
+              "fiction",
+              "workbook",
+              "journal"
+            ],
+            "title": "Book Type",
+            "default": "non_fiction"
+          },
+          "print_format": {
+            "type": "string",
+            "enum": [
+              "paperback",
+              "hardcover"
+            ],
+            "title": "Print Format",
+            "default": "paperback"
+          },
+          "marketplace": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Marketplace",
+            "default": "amazon_com"
+          },
+          "trim_size": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Trim Size",
+            "default": "6x9"
+          },
+          "paper_type": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Paper Type",
+            "default": "white_bw"
+          },
+          "target_page_count": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 24.0,
+            "title": "Target Page Count",
+            "default": 100
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "topic"
+        ],
+        "title": "BookCreate"
+      },
+      "BookListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BookResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "BookListResponse"
       },
       "BookPlanRequest": {
         "properties": {
@@ -991,6 +2466,337 @@
         ],
         "title": "BookPlanResponse"
       },
+      "BookResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "book_concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Book Concept"
+          },
+          "target_audience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Audience"
+          },
+          "target_reader_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Reader Profile"
+          },
+          "book_type": {
+            "type": "string",
+            "title": "Book Type"
+          },
+          "print_format": {
+            "type": "string",
+            "title": "Print Format"
+          },
+          "marketplace": {
+            "type": "string",
+            "title": "Marketplace"
+          },
+          "trim_size": {
+            "type": "string",
+            "title": "Trim Size"
+          },
+          "paper_type": {
+            "type": "string",
+            "title": "Paper Type"
+          },
+          "target_page_count": {
+            "type": "integer",
+            "title": "Target Page Count"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "front_matter_pages": {
+            "type": "integer",
+            "title": "Front Matter Pages"
+          },
+          "back_matter_pages": {
+            "type": "integer",
+            "title": "Back Matter Pages"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "chapter_count": {
+            "type": "integer",
+            "title": "Chapter Count",
+            "default": 0
+          },
+          "total_allocated_pages": {
+            "type": "integer",
+            "title": "Total Allocated Pages",
+            "default": 0
+          },
+          "total_word_count": {
+            "type": "integer",
+            "title": "Total Word Count",
+            "default": 0
+          },
+          "illustration_count": {
+            "type": "integer",
+            "title": "Illustration Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "owner_id",
+          "title",
+          "topic",
+          "book_type",
+          "print_format",
+          "marketplace",
+          "trim_size",
+          "paper_type",
+          "target_page_count",
+          "status",
+          "front_matter_pages",
+          "back_matter_pages",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BookResponse"
+      },
+      "BookUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          },
+          "book_concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Book Concept"
+          },
+          "target_audience": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Audience"
+          },
+          "target_reader_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Reader Profile"
+          },
+          "book_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Book Type"
+          },
+          "print_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Print Format"
+          },
+          "marketplace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marketplace"
+          },
+          "trim_size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trim Size"
+          },
+          "paper_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paper Type"
+          },
+          "target_page_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 24.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Page Count"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "front_matter_pages": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Front Matter Pages"
+          },
+          "back_matter_pages": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Back Matter Pages"
+          }
+        },
+        "type": "object",
+        "title": "BookUpdate"
+      },
       "CSRFResponse": {
         "properties": {
           "csrf_token": {
@@ -1003,6 +2809,83 @@
           "csrf_token"
         ],
         "title": "CSRFResponse"
+      },
+      "ChapterCreate": {
+        "properties": {
+          "chapter_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Chapter Number",
+            "description": "Sequential chapter order number",
+            "default": 1
+          },
+          "chapter_type": {
+            "type": "string",
+            "enum": [
+              "front_matter",
+              "chapter",
+              "back_matter"
+            ],
+            "title": "Chapter Type",
+            "default": "chapter"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Chapter title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Chapter synopsis/summary"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Markdown manuscript content",
+            "default": ""
+          },
+          "allocated_pages": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Allocated Pages",
+            "description": "Target page budget",
+            "default": 10
+          },
+          "draft_status": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "DRAFT",
+              "IN_PROGRESS",
+              "COMPLETED"
+            ],
+            "title": "Draft Status",
+            "default": "NOT_STARTED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "ChapterCreate"
       },
       "ChapterPlanItem": {
         "properties": {
@@ -1053,6 +2936,214 @@
         ],
         "title": "ChapterPlanItem"
       },
+      "ChapterReorderItem": {
+        "properties": {
+          "chapter_id": {
+            "type": "string",
+            "title": "Chapter Id"
+          },
+          "chapter_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Chapter Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chapter_id",
+          "chapter_number"
+        ],
+        "title": "ChapterReorderItem"
+      },
+      "ChapterReorderRequest": {
+        "properties": {
+          "reordered_chapters": {
+            "items": {
+              "$ref": "#/components/schemas/ChapterReorderItem"
+            },
+            "type": "array",
+            "title": "Reordered Chapters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reordered_chapters"
+        ],
+        "title": "ChapterReorderRequest"
+      },
+      "ChapterResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "book_id": {
+            "type": "string",
+            "title": "Book Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "chapter_number": {
+            "type": "integer",
+            "title": "Chapter Number"
+          },
+          "chapter_type": {
+            "type": "string",
+            "title": "Chapter Type"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "allocated_pages": {
+            "type": "integer",
+            "title": "Allocated Pages"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "estimated_reading_minutes": {
+            "type": "integer",
+            "title": "Estimated Reading Minutes"
+          },
+          "draft_status": {
+            "type": "string",
+            "title": "Draft Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "book_id",
+          "owner_id",
+          "chapter_number",
+          "chapter_type",
+          "title",
+          "content",
+          "allocated_pages",
+          "word_count",
+          "estimated_reading_minutes",
+          "draft_status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ChapterResponse"
+      },
+      "ChapterUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "allocated_pages": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocated Pages"
+          },
+          "chapter_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "front_matter",
+                  "chapter",
+                  "back_matter"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chapter Type"
+          },
+          "draft_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "NOT_STARTED",
+                  "DRAFT",
+                  "IN_PROGRESS",
+                  "COMPLETED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Status"
+          }
+        },
+        "type": "object",
+        "title": "ChapterUpdate"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1088,6 +3179,441 @@
           "version"
         ],
         "title": "HealthResponse"
+      },
+      "IllustrationCreate": {
+        "properties": {
+          "chapter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chapter Id"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Prompt",
+            "description": "Detailed generation or creative prompt"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "style_preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Preset",
+            "default": "modern_clean_vector"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "position_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROMPT",
+              "PLACEHOLDER"
+            ],
+            "title": "Status",
+            "default": "PROMPT"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "IllustrationCreate"
+      },
+      "IllustrationPromptGenerateRequest": {
+        "properties": {
+          "chapter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chapter Id"
+          },
+          "target_count": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Target Count",
+            "default": 3
+          },
+          "style_preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Preset",
+            "default": "clean_minimalist_line_art"
+          },
+          "visual_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Instructions"
+          }
+        },
+        "type": "object",
+        "title": "IllustrationPromptGenerateRequest"
+      },
+      "IllustrationPromptGenerateResponse": {
+        "properties": {
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/IllustrationPromptItem"
+            },
+            "type": "array",
+            "title": "Prompts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompts"
+        ],
+        "title": "IllustrationPromptGenerateResponse"
+      },
+      "IllustrationPromptItem": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "style_preset": {
+            "type": "string",
+            "title": "Style Preset"
+          },
+          "suggested_placement": {
+            "type": "string",
+            "title": "Suggested Placement"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt",
+          "description",
+          "style_preset",
+          "suggested_placement"
+        ],
+        "title": "IllustrationPromptItem"
+      },
+      "IllustrationResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "book_id": {
+            "type": "string",
+            "title": "Book Id"
+          },
+          "chapter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chapter Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "style_preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Preset"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "position_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Description"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "storage_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Key"
+          },
+          "mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Type"
+          },
+          "file_size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Size Bytes"
+          },
+          "sha256_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256 Hash"
+          },
+          "asset_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Source"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "book_id",
+          "owner_id",
+          "prompt",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "IllustrationResponse"
+      },
+      "IllustrationStatusUpdate": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROMPT",
+              "PLACEHOLDER",
+              "GENERATED",
+              "APPROVED_FINAL"
+            ],
+            "title": "Status"
+          },
+          "human_approved": {
+            "type": "boolean",
+            "title": "Human Approved",
+            "description": "Explicit approval confirmation by the publisher",
+            "default": false
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "IllustrationStatusUpdate"
+      },
+      "IllustrationUpdate": {
+        "properties": {
+          "chapter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chapter Id"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "style_preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Preset"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "position_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Description"
+          }
+        },
+        "type": "object",
+        "title": "IllustrationUpdate"
       },
       "KDPMetadataResponse": {
         "properties": {
@@ -1161,6 +3687,83 @@
           "password"
         ],
         "title": "LoginRequest"
+      },
+      "ManuscriptDraftRequest": {
+        "properties": {
+          "target_words": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 100.0,
+            "title": "Target Words",
+            "description": "Desired word count budget",
+            "default": 1500
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone",
+            "description": "Narrative tone",
+            "default": "authoritative_practical"
+          },
+          "special_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Instructions",
+            "description": "Guidance or focus areas"
+          }
+        },
+        "type": "object",
+        "title": "ManuscriptDraftRequest"
+      },
+      "ManuscriptDraftResponse": {
+        "properties": {
+          "chapter_title": {
+            "type": "string",
+            "title": "Chapter Title"
+          },
+          "markdown_content": {
+            "type": "string",
+            "title": "Markdown Content"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "estimated_reading_minutes": {
+            "type": "integer",
+            "title": "Estimated Reading Minutes"
+          },
+          "is_draft": {
+            "type": "boolean",
+            "title": "Is Draft",
+            "default": true
+          },
+          "author_reviewed": {
+            "type": "boolean",
+            "title": "Author Reviewed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "chapter_title",
+          "markdown_content",
+          "word_count",
+          "estimated_reading_minutes"
+        ],
+        "title": "ManuscriptDraftResponse"
       },
       "MessageResponse": {
         "properties": {
@@ -1392,6 +3995,114 @@
           "reference_doc"
         ],
         "title": "RuleViolation"
+      },
+      "SectionExpandRequest": {
+        "properties": {
+          "section_heading": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Section Heading"
+          },
+          "current_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Current Text"
+          },
+          "expansion_guidance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expansion Guidance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section_heading",
+          "current_text"
+        ],
+        "title": "SectionExpandRequest"
+      },
+      "SectionExpandResponse": {
+        "properties": {
+          "section_heading": {
+            "type": "string",
+            "title": "Section Heading"
+          },
+          "expanded_markdown": {
+            "type": "string",
+            "title": "Expanded Markdown"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section_heading",
+          "expanded_markdown",
+          "word_count"
+        ],
+        "title": "SectionExpandResponse"
+      },
+      "SectionRegenerateRequest": {
+        "properties": {
+          "section_heading": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Section Heading"
+          },
+          "current_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Current Text"
+          },
+          "alternative_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative Instructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section_heading",
+          "current_text"
+        ],
+        "title": "SectionRegenerateRequest"
+      },
+      "SectionRegenerateResponse": {
+        "properties": {
+          "section_heading": {
+            "type": "string",
+            "title": "Section Heading"
+          },
+          "regenerated_markdown": {
+            "type": "string",
+            "title": "Regenerated Markdown"
+          },
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section_heading",
+          "regenerated_markdown",
+          "word_count"
+        ],
+        "title": "SectionRegenerateResponse"
       },
       "UserResponse": {
         "properties": {
