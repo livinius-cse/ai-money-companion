@@ -83,7 +83,8 @@ def setup_initial_admin(
         bind = db.get_bind()
         if bind is not None and bind.dialect.name == "sqlite":
             try:
-                db.execute(text("BEGIN IMMEDIATE"))
+                if not db.in_transaction():
+                    db.begin()
             except Exception:
                 pass
 

@@ -35,6 +35,13 @@ from app.schemas.manuscript import (
     SectionRegenerateRequest,
     SectionRegenerateResponse,
 )
+from app.schemas.book_document import (
+    InteriorGenerationRequest,
+    CoverGenerationRequest,
+    BookDocumentResponse,
+    BookDocumentListResponse,
+    CoverCalculationResponse,
+)
 
 __all__ = [
     "LoginRequest",
@@ -78,4 +85,9 @@ __all__ = [
     "SectionExpandResponse",
     "SectionRegenerateRequest",
     "SectionRegenerateResponse",
+    "InteriorGenerationRequest",
+    "CoverGenerationRequest",
+    "BookDocumentResponse",
+    "BookDocumentListResponse",
+    "CoverCalculationResponse",
 ]

@@ -9,6 +9,8 @@ import {
   PenTool,
   Image as ImageIcon,
   Compass,
+  BookOpen,
+  Palette,
 } from "lucide-react";
 
 interface BookSubNavProps {
@@ -35,6 +37,8 @@ export function BookSubNav({
     { label: "Page Planner", href: `/books/${bookId}/planner`, icon: Calendar },
     { label: "Content Studio", href: `/books/${bookId}/content`, icon: PenTool },
     { label: "Illustration Studio", href: `/books/${bookId}/illustrations`, icon: ImageIcon },
+    { label: "Interior Layout", href: `/books/${bookId}/layout`, icon: BookOpen },
+    { label: "Cover Design", href: `/books/${bookId}/cover`, icon: Palette },
   ];
 
   return (

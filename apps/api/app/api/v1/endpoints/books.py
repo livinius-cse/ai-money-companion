@@ -229,3 +229,96 @@ def apply_plan_to_book(
     db.commit()
     db.refresh(book)
     return _build_book_response(db, book)
+
+
+@router.get("/{book_id}/quality", tags=["Quality & Pre-Flight Validation"])
+def get_book_quality_audit(
+    book_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Comprehensive quality audit across readability, content repetition,
+    Amazon policy violations, and structural PDF validation.
+    """
+    from app.services.quality_validation import QualityValidationService
+    from app.models.book_document import BookDocument
+
+    book = get_user_book_or_404(db, book_id, current_user.id)
+
+    chapters = db.scalars(
+        select(Chapter)
+        .where(Chapter.book_id == book_id, Chapter.owner_id == current_user.id)
+        .order_by(Chapter.chapter_number.asc())
+    ).all()
+
+    # 1. Full Manuscript Readability
+    full_text = " ".join([c.content for c in chapters if c.content])
+    readability = QualityValidationService.analyze_readability(full_text, language="en")
+
+    # 2. Content & Amazon Policy Audit
+    chap_dicts = [
+        {"chapter_number": c.chapter_number, "title": c.title, "content": c.content}
+        for c in chapters
+    ]
+    content_findings = QualityValidationService.audit_manuscript_content(
+        book_title=book.title,
+        chapters=chap_dicts,
+        cover_texts=[book.title, book.subtitle or "", book.topic or ""],
+    )
+
+    # 3. Document PDF Inspection Findings
+    latest_interior = db.scalar(
+        select(BookDocument)
+        .where(
+            BookDocument.book_id == book_id,
+            BookDocument.owner_id == current_user.id,
+            BookDocument.document_type == "INTERIOR",
+            BookDocument.status == "GENERATED",
+        )
+        .order_by(BookDocument.version.desc())
+    )
+
+    latest_cover = db.scalar(
+        select(BookDocument)
+        .where(
+            BookDocument.book_id == book_id,
+            BookDocument.owner_id == current_user.id,
+            BookDocument.document_type == "COVER",
+            BookDocument.status == "GENERATED",
+        )
+        .order_by(BookDocument.version.desc())
+    )
+
+    pdf_findings = []
+    if latest_interior and latest_interior.generation_metadata:
+        pdf_findings.extend(
+            latest_interior.generation_metadata.get("validation_summary", {}).get("findings", [])
+        )
+    if latest_cover and latest_cover.generation_metadata:
+        pdf_findings.extend(
+            latest_cover.generation_metadata.get("validation_summary", {}).get("findings", [])
+        )
+
+    all_findings = content_findings + pdf_findings
+    blocking_count = sum(1 for f in all_findings if f.get("severity") == "BLOCKING")
+    warning_count = sum(1 for f in all_findings if f.get("severity") == "WARNING")
+    advisory_count = sum(1 for f in all_findings if f.get("severity") == "ADVISORY")
+
+    return {
+        "book_id": book.id,
+        "book_title": book.title,
+        "readability": readability,
+        "findings": all_findings,
+        "summary": {
+            "total_findings": len(all_findings),
+            "blocking": blocking_count,
+            "warning": warning_count,
+            "advisory": advisory_count,
+            "is_preflight_ready": (blocking_count == 0),
+        },
+        "latest_documents": {
+            "interior_version": latest_interior.version if latest_interior else None,
+            "cover_version": latest_cover.version if latest_cover else None,
+        },
+    }

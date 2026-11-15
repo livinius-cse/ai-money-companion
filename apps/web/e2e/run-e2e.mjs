@@ -2,10 +2,12 @@ import { spawn, execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import http from "http";
+import { fileURLToPath } from "url";
 
-const projectRoot = path.resolve("../../");
-const apiDir = path.resolve("../api");
-const webDir = path.resolve(".");
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const webDir = path.resolve(currentDir, "..");
+const apiDir = path.resolve(webDir, "../api");
+const projectRoot = path.resolve(webDir, "../..");
 
 const testDbPath = path.join(apiDir, "test_browser_e2e.db");
 const testStorageDir = path.join(apiDir, "storage_test_browser_e2e");
@@ -72,6 +74,7 @@ async function main() {
       cwd: apiDir,
       env: {
         ...process.env,
+        PYTHONUNBUFFERED: "1",
         DATABASE_URL: dbUrl,
         STORAGE_DIR: "./storage_test_browser_e2e",
         SECRET_KEY: "qSxEGL3i6z1uHpkLXmBo6mLe6Z8Sa9rbJnfXVXCJrkTpqJm5",
@@ -84,6 +87,8 @@ async function main() {
 
   backend.stderr.on("data", (d) => process.stderr.write(`[api] ${d}`));
   backend.stdout.on("data", (d) => process.stdout.write(`[api] ${d}`));
+  backend.on("error", (err) => console.error("[api spawn error]", err));
+  backend.on("exit", (code, sig) => console.log("[api exit]", code, sig));
 
   let frontend = null;
   let exitCode = 1;
@@ -115,10 +120,11 @@ async function main() {
     console.log("✓ Frontend is alive and ready at http://127.0.0.1:3000");
 
     // 4. Run Playwright real browser test
-    console.log("4. Running Playwright browser test on Chromium...");
+    const specArg = process.argv[2] ? (process.argv[2].startsWith("e2e/") ? process.argv[2] : `e2e/${process.argv[2]}`) : "e2e/";
+    console.log(`4. Running Playwright browser test (${specArg}) on Chromium...`);
     const playwright = spawn(
       "pnpm.cmd",
-      ["exec", "playwright", "test", "e2e/m3-journey.spec.ts"],
+      ["exec", "playwright", "test", specArg],
       {
         cwd: webDir,
         env: {

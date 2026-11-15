@@ -5,6 +5,7 @@ from app.models.ai_disclosure import AIDisclosureAttestation
 from app.models.book import Book
 from app.models.chapter import Chapter
 from app.models.illustration import Illustration
+from app.models.book_document import BookDocument
 
 __all__ = [
     "Base",
@@ -14,4 +15,5 @@ __all__ = [
     "Book",
     "Chapter",
     "Illustration",
+    "BookDocument",
 ]

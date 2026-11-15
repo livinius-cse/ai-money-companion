@@ -46,7 +46,8 @@ class KDPValidatorService:
         multipliers = {
             "white_bw": 0.002252,
             "cream_bw": 0.002500,
-            "groundwood_bw": 0.002347,
+            "groundwood_bw": 0.002350,
+            "groundwood": 0.002350,
             "standard_color": 0.002252,
             "premium_color": 0.002347,
         }

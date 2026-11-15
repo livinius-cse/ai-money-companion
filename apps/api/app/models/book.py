@@ -8,6 +8,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.chapter import Chapter
     from app.models.illustration import Illustration
+    from app.models.book_document import BookDocument
     from app.models.user import User
 
 
@@ -122,6 +123,12 @@ class Book(Base):
         "Illustration",
         back_populates="book",
         cascade="all, delete-orphan",
+    )
+    documents: Mapped[List["BookDocument"]] = relationship(
+        "BookDocument",
+        back_populates="book",
+        cascade="all, delete-orphan",
+        order_by="BookDocument.version.desc()",
     )
 
     def __repr__(self) -> str:

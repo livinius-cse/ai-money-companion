@@ -42,6 +42,6 @@ def test_spine_width_calculation():
     w_cream = KDPValidatorService.calculate_spine_width(100, "cream_bw")
     assert w_cream == 0.2500
 
-    # 100 pages groundwood B&W: 100 * 0.002347 = 0.2347
+    # 100 pages groundwood B&W: 100 * 0.002350 = 0.2350 (Official Amazon KDP spec)
     w_gw = KDPValidatorService.calculate_spine_width(100, "groundwood_bw")
-    assert w_gw == 0.2347
+    assert w_gw == 0.2350

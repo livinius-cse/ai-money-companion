@@ -134,3 +134,77 @@ class LocalAssetStorage:
         except Exception:
             pass
         return False
+
+    @classmethod
+    def get_documents_base_dir(cls) -> Path:
+        base = Path(settings.STORAGE_DIR).resolve() / "documents"
+        base.mkdir(parents=True, exist_ok=True)
+        return base
+
+    @classmethod
+    def save_book_document_file(
+        cls,
+        book_id: str,
+        document_type: str,
+        version: int,
+        file_bytes: bytes,
+    ) -> Tuple[str, int, str]:
+        """
+        Securely save generated publishing PDF to private disk storage.
+        Returns: (storage_key, file_size_bytes, sha256_hash)
+        """
+        # Document ceiling: 650 MB
+        if len(file_bytes) > 650 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="PDF document exceeds 650MB maximum ceiling.",
+            )
+
+        sha256 = calculate_sha256(file_bytes)
+        doc_type_clean = document_type.lower()
+        random_suffix = uuid.uuid4().hex[:8]
+        relative_path = f"{book_id}/{doc_type_clean}_v{version}_{random_suffix}.pdf"
+
+        base_dir = cls.get_documents_base_dir()
+        dest_path = (base_dir / relative_path).resolve()
+
+        if not dest_path.is_relative_to(base_dir):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security violation: Invalid document destination path.",
+            )
+
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(dest_path, "wb") as f:
+            f.write(file_bytes)
+
+        return relative_path, len(file_bytes), sha256
+
+    @classmethod
+    def get_document_path(cls, storage_key: str) -> Path:
+        """Resolve and verify storage path for an existing PDF document."""
+        base_dir = cls.get_documents_base_dir()
+        target_path = (base_dir / storage_key).resolve()
+
+        if not target_path.is_relative_to(base_dir) or not target_path.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document file not found.",
+            )
+
+        return target_path
+
+    @classmethod
+    def delete_document_file(cls, storage_key: Optional[str]) -> bool:
+        """Safely delete document PDF from disk if it exists."""
+        if not storage_key:
+            return False
+        try:
+            base_dir = cls.get_documents_base_dir()
+            target_path = (base_dir / storage_key).resolve()
+            if target_path.is_relative_to(base_dir) and target_path.is_file():
+                target_path.unlink()
+                return True
+        except Exception:
+            pass
+        return False
