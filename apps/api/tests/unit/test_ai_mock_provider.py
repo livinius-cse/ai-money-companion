@@ -44,3 +44,41 @@ async def test_mock_provider_fault_simulation():
     provider_err = MockAIProvider(simulate_failure="error")
     with pytest.raises(AIProviderError):
         await provider_err.generate_text("test")
+
+
+@pytest.mark.asyncio
+async def test_coloring_book_prompt_uses_coloring_plan_despite_generic_page_budget():
+    provider = MockAIProvider()
+    prompt = (
+        "Generate a structured publishing plan for a book with topic: "
+        "'Children's coloring book featuring 50 cute animal designs with bold outlines', "
+        "target audience: 'Children aged 4-8', book type: 'LOW_CONTENT', "
+        "format: 'paperback', trim size: '8.5x11', paper: 'white_bw', "
+        "target page budget: 106 pages."
+    )
+
+    result = await provider.generate_structured(prompt, BookPlanResponse)
+
+    assert result.data.title_options[0] == "Limona: Cute Animals Coloring Book for Kids"
+    assert result.data.chapters[0].title == "Woodland and Forest Friends"
+    assert sum(chapter.allocated_pages for chapter in result.data.chapters) == 100
+    assert result.data.front_matter_pages + sum(
+        chapter.allocated_pages for chapter in result.data.chapters
+    ) + result.data.back_matter_pages == 106
+
+
+@pytest.mark.asyncio
+async def test_generic_page_budget_does_not_select_finance_plan():
+    provider = MockAIProvider()
+    prompt = (
+        "Generate a structured publishing plan for a book with topic: "
+        "'A beginner-friendly guide to growing herbs at home', "
+        "target audience: 'New gardeners', book type: 'NON_FICTION', "
+        "format: 'paperback', trim size: '6x9', paper: 'white_bw', "
+        "target page budget: 100 pages."
+    )
+
+    result = await provider.generate_structured(prompt, BookPlanResponse)
+
+    assert result.data.title_options[0] == "The Practical Blueprint"
+    assert "Money" not in result.data.title_options[0]
