@@ -83,6 +83,9 @@ class Settings(BaseSettings):
     # AI Configuration (Mock by default for zero-cost offline development)
     AI_PROVIDER: Literal["mock", "gemini"] = "mock"
     GEMINI_API_KEY: Optional[str] = None
+    CLOUDFLARE_ACCOUNT_ID: Optional[str] = None
+    CLOUDFLARE_API_TOKEN: Optional[str] = None
+    CLOUDFLARE_IMAGE_TIMEOUT_SECONDS: float = Field(default=90.0, gt=0.0, le=180.0)
     AI_TIMEOUT_SECONDS: float = Field(default=30.0, gt=0.0, le=120.0)
     AI_ALLOW_FALLBACK: bool = False  # Strictly False by default: NEVER silently fallback to mock
 

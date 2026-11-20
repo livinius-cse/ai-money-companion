@@ -4,6 +4,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, generate_csrf_token
 from app.models.user import User
+from app.core.config import settings
+from app.ai.cloudflare_image_provider import CloudflareImageProvider
 
 
 def get_auth_headers(client: TestClient, user: User) -> dict:
@@ -94,6 +96,88 @@ def test_coloring_book_generates_50_unique_animal_prompts(client: TestClient, te
         "Pets and Playful Companions",
         "Birds, Bugs and Tiny Creatures",
     }
+
+
+def test_cloudflare_ai_image_generation_stores_private_asset(
+    client: TestClient, test_user: User, monkeypatch
+):
+    headers = get_auth_headers(client, test_user)
+    monkeypatch.setattr(settings, "CLOUDFLARE_ACCOUNT_ID", "test-account")
+    monkeypatch.setattr(settings, "CLOUDFLARE_API_TOKEN", "test-token")
+    generated_bytes = bytes([255, 216, 255]) + bytes(200)
+
+    async def fake_generate_image(self, prompt: str):
+        assert "black-and-white coloring book illustration" in prompt
+        return generated_bytes, "image/jpeg"
+
+    monkeypatch.setattr(CloudflareImageProvider, "generate_image", fake_generate_image)
+
+    book_res = client.post(
+        "/api/v1/books",
+        json={"title": "Limona Test", "topic": "Cute animal coloring book"},
+        headers=headers,
+    )
+    book_id = book_res.json()["id"]
+    illustration_res = client.post(
+        f"/api/v1/books/{book_id}/illustrations",
+        json={"prompt": "Cute baby fox with bold closed outlines", "status": "PROMPT"},
+        headers=headers,
+    )
+    illustration_id = illustration_res.json()["id"]
+
+    generated_res = client.post(
+        f"/api/v1/books/{book_id}/illustrations/{illustration_id}/generate-image",
+        headers=headers,
+    )
+    assert generated_res.status_code == 200
+    generated = generated_res.json()
+    assert generated["status"] == "GENERATED"
+    assert generated["asset_source"] == "AI_GENERATED"
+    assert generated["mime_type"] == "image/jpeg"
+    assert generated["file_size_bytes"] == len(generated_bytes)
+    assert generated["sha256_hash"]
+
+    asset_res = client.get(
+        f"/api/v1/books/{book_id}/illustrations/{illustration_id}/asset",
+        headers=headers,
+    )
+    assert asset_res.status_code == 200
+    assert asset_res.content == generated_bytes
+
+    # Never spend quota by regenerating over an existing asset by accident.
+    second_generation = client.post(
+        f"/api/v1/books/{book_id}/illustrations/{illustration_id}/generate-image",
+        headers=headers,
+    )
+    assert second_generation.status_code == 409
+
+
+def test_cloudflare_ai_image_generation_requires_credentials(
+    client: TestClient, test_user: User, monkeypatch
+):
+    headers = get_auth_headers(client, test_user)
+    monkeypatch.setattr(settings, "CLOUDFLARE_ACCOUNT_ID", None)
+    monkeypatch.setattr(settings, "CLOUDFLARE_API_TOKEN", None)
+
+    book_res = client.post(
+        "/api/v1/books",
+        json={"title": "Unconfigured Image Book", "topic": "Coloring book"},
+        headers=headers,
+    )
+    book_id = book_res.json()["id"]
+    illustration_res = client.post(
+        f"/api/v1/books/{book_id}/illustrations",
+        json={"prompt": "Cute baby elephant line art", "status": "PROMPT"},
+        headers=headers,
+    )
+    illustration_id = illustration_res.json()["id"]
+
+    generated_res = client.post(
+        f"/api/v1/books/{book_id}/illustrations/{illustration_id}/generate-image",
+        headers=headers,
+    )
+    assert generated_res.status_code == 503
+    assert "Cloudflare Workers AI is not configured" in generated_res.json()["detail"]
 
 
 def test_illustration_upload_asset_retrieval_and_approval(client: TestClient, test_user: User):

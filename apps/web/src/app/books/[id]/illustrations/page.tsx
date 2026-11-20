@@ -89,6 +89,10 @@ export default function IllustrationStudioPage() {
   const [generatedPrompts, setGeneratedPrompts] = useState<IllustrationPromptItem[]>([]);
   const [addingAllPrompts, setAddingAllPrompts] = useState(false);
   const [bulkAddProgress, setBulkAddProgress] = useState(0);
+  const [generatingImageIds, setGeneratingImageIds] = useState<string[]>([]);
+  const [bulkGeneratingImages, setBulkGeneratingImages] = useState(false);
+  const [bulkImageProgress, setBulkImageProgress] = useState({ completed: 0, total: 0 });
+  const [bulkImageFailures, setBulkImageFailures] = useState<string[]>([]);
 
   // Approval Modal
   const [approvalTarget, setApprovalTarget] = useState<Illustration | null>(null);
@@ -250,6 +254,71 @@ export default function IllustrationStudioPage() {
     }
   };
 
+  const generateImageAsset = async (ill: Illustration) => {
+    const updated = await apiClient<Illustration>(
+      `/api/v1/books/${bookId}/illustrations/${ill.id}/generate-image`,
+      { method: "POST" }
+    );
+    setIllustrations((prev) => prev.map((item) => (item.id === ill.id ? updated : item)));
+    return updated;
+  };
+
+  const handleGenerateSingleImage = async (ill: Illustration) => {
+    if (ill.storage_key || generatingImageIds.includes(ill.id) || bulkGeneratingImages) return;
+    setGeneratingImageIds((prev) => [...prev, ill.id]);
+    try {
+      await generateImageAsset(ill);
+    } catch (err: any) {
+      alert(err?.message || "Cloudflare could not generate this image. Check the Workers AI quota and retry.");
+    } finally {
+      setGeneratingImageIds((prev) => prev.filter((id) => id !== ill.id));
+    }
+  };
+
+  const handleGenerateAllImages = async () => {
+    const queue = illustrations.filter((ill) => !ill.storage_key && !generatingImageIds.includes(ill.id));
+    if (queue.length === 0 || bulkGeneratingImages) return;
+    if (!confirm(`Generate images for all ${queue.length} illustrations using Cloudflare Workers AI? This uses your daily Workers AI Neurons quota.`)) {
+      return;
+    }
+
+    setBulkGeneratingImages(true);
+    setBulkImageProgress({ completed: 0, total: queue.length });
+    setBulkImageFailures([]);
+    const failures: string[] = [];
+    let succeeded = 0;
+    let attempted = 0;
+    let quotaReached = false;
+
+    for (const ill of queue) {
+      setGeneratingImageIds((prev) => [...prev, ill.id]);
+      try {
+        await generateImageAsset(ill);
+        succeeded += 1;
+      } catch (err: any) {
+        const message = err?.message || "Image generation failed.";
+        failures.push(`${ill.description || ill.prompt.slice(0, 70)}: ${message}`);
+        // Stop on quota/rate-limit errors rather than issuing requests that will also fail.
+        if (err?.status === 429 || err?.status === 503 || /429|quota|rate.?limit|credential|not configured/i.test(message)) {
+          quotaReached = true;
+        }
+      } finally {
+        setGeneratingImageIds((prev) => prev.filter((id) => id !== ill.id));
+        attempted += 1;
+        setBulkImageProgress({ completed: attempted, total: queue.length });
+      }
+      if (quotaReached) break;
+    }
+
+    setBulkImageFailures(failures);
+    setBulkGeneratingImages(false);
+    if (failures.length > 0) {
+      alert(`Generated ${succeeded} of ${queue.length} images. ${failures.length} failed or hit the daily quota. Successful images are saved; failed prompts remain available to retry.`);
+    } else {
+      alert(`Successfully generated and saved all ${succeeded} images.`);
+    }
+  };
+
   const triggerUpload = (illustrationId: string) => {
     setActiveUploadTargetId(illustrationId);
     if (fileInputRef.current) {
@@ -352,6 +421,8 @@ export default function IllustrationStudioPage() {
     }
   };
 
+  const pendingImageCount = illustrations.filter((ill) => !ill.storage_key).length;
+
   const filteredIllustrations = illustrations.filter((ill) => {
     return statusFilter === "ALL" || ill.status === statusFilter;
   });
@@ -412,8 +483,16 @@ export default function IllustrationStudioPage() {
               <span>Generate Prompts with AI</span>
             </button>
             <button
+              onClick={handleGenerateAllImages}
+              disabled={pendingImageCount === 0 || bulkGeneratingImages || generatingImageIds.length > 0}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{bulkGeneratingImages ? `Generating ${bulkImageProgress.completed}/${bulkImageProgress.total}...` : `Generate Images (${pendingImageCount})`}</span>
+            </button>
+            <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-sm shadow-amber-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition"
             >
               <Plus className="w-4 h-4" />
               <span>Add Placeholder</span>
@@ -422,6 +501,8 @@ export default function IllustrationStudioPage() {
         </div>
 
         {/* Filter Strip */}
+        <p className="text-[11px] text-slate-500">Workers AI Free includes 10,000 Neurons per day. Image usage varies; generation stops on quota or rate-limit errors.</p>
+
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           {["ALL", "PROMPT", "PLACEHOLDER", "GENERATED", "APPROVED_FINAL"].map((st) => (
             <button
@@ -437,6 +518,27 @@ export default function IllustrationStudioPage() {
             </button>
           ))}
         </div>
+
+        {bulkImageProgress.total > 0 && (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-white">Cloudflare image generation</span>
+              <span className="font-mono text-amber-400">{bulkImageProgress.completed}/{bulkImageProgress.total} attempted</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div
+                className="h-full bg-amber-500 transition-all"
+                style={{ width: `${bulkImageProgress.total ? (bulkImageProgress.completed / bulkImageProgress.total) * 100 : 0}%` }}
+              />
+            </div>
+            {bulkGeneratingImages && <p className="text-[11px] text-slate-400">Images are saved as they finish. You can leave this page open while the queue runs.</p>}
+            {bulkImageFailures.length > 0 && (
+              <p className="text-[11px] text-rose-300">
+                {bulkImageFailures.length} failed or were stopped by the daily quota. Their prompt cards remain available for retry.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Illustrations Grid */}
         {filteredIllustrations.length === 0 ? (
@@ -468,7 +570,7 @@ export default function IllustrationStudioPage() {
                       <img
                         src={`/api/v1/books/${bookId}/illustrations/${ill.id}/asset`}
                         alt={ill.prompt}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain bg-white"
                       />
                     ) : (
                       <div className="text-center space-y-2 p-4">
@@ -536,7 +638,7 @@ export default function IllustrationStudioPage() {
                     )}
 
                     {/* Action Footer */}
-                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
                       {/* Upload / Re-upload Button */}
                       <button
                         onClick={() => triggerUpload(ill.id)}
@@ -546,6 +648,17 @@ export default function IllustrationStudioPage() {
                         <Upload className="w-3.5 h-3.5 text-amber-400" />
                         <span>{uploadingId === ill.id ? "Uploading..." : hasAsset ? "Replace File" : "Upload File"}</span>
                       </button>
+
+                      {!hasAsset && (
+                        <button
+                          onClick={() => handleGenerateSingleImage(ill)}
+                          disabled={bulkGeneratingImages || generatingImageIds.includes(ill.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition disabled:opacity-50"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>{generatingImageIds.includes(ill.id) ? "Generating..." : "Generate Image"}</span>
+                        </button>
+                      )}
 
                       {/* Status Transition Select */}
                       <select

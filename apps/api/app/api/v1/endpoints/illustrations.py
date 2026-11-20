@@ -20,6 +20,10 @@ from app.schemas.illustration import (
 )
 from app.core.storage import LocalAssetStorage, MAX_UPLOAD_SIZE_BYTES, detect_image_type
 from app.services.illustration_prompt import IllustrationPromptService
+from app.ai.cloudflare_image_provider import (
+    CloudflareImageProvider,
+    CloudflareImageGenerationError,
+)
 from app.services.approval import ApprovalService
 from app.api.v1.endpoints.books import get_user_book_or_404
 
@@ -136,6 +140,67 @@ async def generate_illustration_prompts(
         req=payload,
     )
     return envelope.data
+
+
+@router.post(
+    "/{illustration_id}/generate-image",
+    response_model=IllustrationResponse,
+    dependencies=[Depends(verify_csrf)],
+)
+async def generate_illustration_image(
+    book_id: str,
+    illustration_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Generate one illustration with Cloudflare FLUX and store it as a private asset."""
+    illustration = get_user_illustration_or_404(
+        db, book_id, illustration_id, current_user.id
+    )
+    if illustration.storage_key:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This illustration already has an image. Replace or remove it before generating another.",
+        )
+
+    provider = CloudflareImageProvider()
+    if not provider.is_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cloudflare Workers AI is not configured. Add CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to apps/api/.env, then restart the API.",
+        )
+
+    try:
+        image_bytes, mime_type = await provider.generate_image(illustration.prompt)
+    except CloudflareImageGenerationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+
+    storage_key = None
+    try:
+        storage_key, size_bytes, sha256 = LocalAssetStorage.save_illustration_asset(
+            book_id=book_id,
+            illustration_id=illustration_id,
+            file_bytes=image_bytes,
+            mime_type=mime_type,
+        )
+        illustration.storage_key = storage_key
+        illustration.file_size_bytes = size_bytes
+        illustration.sha256_hash = sha256
+        illustration.mime_type = mime_type
+        illustration.asset_source = "AI_GENERATED"
+        illustration.status = "GENERATED"
+
+        ApprovalService.invalidate_active_approval(
+            db, book_id, "Illustration generated with Cloudflare Workers AI", commit=False
+        )
+        db.commit()
+        db.refresh(illustration)
+        return illustration
+    except Exception:
+        db.rollback()
+        if storage_key:
+            LocalAssetStorage.delete_asset(storage_key)
+        raise
 
 
 @router.get("/{illustration_id}", response_model=IllustrationResponse)
