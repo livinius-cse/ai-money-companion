@@ -24,6 +24,7 @@ from app.schemas.manuscript import (
     SectionRegenerateResponse,
 )
 from app.services.manuscript_generation import ManuscriptGenerationService
+from app.services.approval import ApprovalService
 from app.api.v1.endpoints.books import get_user_book_or_404
 
 router = APIRouter(prefix="/books/{book_id}/chapters", tags=["Chapters & Content Studio"])
@@ -118,6 +119,9 @@ def create_chapter(
         draft_status=payload.draft_status,
     )
     db.add(chapter)
+    ApprovalService.invalidate_active_approval(
+        db, book_id, f"Chapter {payload.chapter_number} added: {payload.title}", commit=False
+    )
     db.commit()
     db.refresh(chapter)
 
@@ -156,6 +160,9 @@ def update_chapter(
         if field != "content" and hasattr(chapter, field):
             setattr(chapter, field, val)
 
+    ApprovalService.invalidate_active_approval(
+        db, book_id, f"Chapter {chapter.chapter_number} edited: {chapter.title}", commit=False
+    )
     db.commit()
     db.refresh(chapter)
     return _build_chapter_response(chapter)
@@ -170,6 +177,9 @@ def delete_chapter(
 ):
     """Delete a chapter from the book."""
     chapter = get_user_chapter_or_404(db, book_id, chapter_id, current_user.id)
+    ApprovalService.invalidate_active_approval(
+        db, book_id, f"Chapter {chapter.chapter_number} deleted: {chapter.title}", commit=False
+    )
     db.delete(chapter)
     db.commit()
     return None
@@ -194,6 +204,9 @@ def reorder_chapters(
         if chap.id in order_map:
             chap.chapter_number = order_map[chap.id]
 
+    ApprovalService.invalidate_active_approval(
+        db, book_id, "Chapter ordering modified", commit=False
+    )
     db.commit()
 
     updated_chapters = db.scalars(

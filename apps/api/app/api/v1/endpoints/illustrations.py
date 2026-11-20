@@ -20,6 +20,7 @@ from app.schemas.illustration import (
 )
 from app.core.storage import LocalAssetStorage, MAX_UPLOAD_SIZE_BYTES, detect_image_type
 from app.services.illustration_prompt import IllustrationPromptService
+from app.services.approval import ApprovalService
 from app.api.v1.endpoints.books import get_user_book_or_404
 
 router = APIRouter(prefix="/books/{book_id}/illustrations", tags=["Illustrations & Asset Management"])
@@ -164,6 +165,9 @@ def update_illustration(
         if hasattr(illustration, field):
             setattr(illustration, field, val)
 
+    ApprovalService.invalidate_active_approval(
+        db, book_id, f"Illustration updated: {illustration.prompt[:30]}", commit=False
+    )
     db.commit()
     db.refresh(illustration)
     return illustration
@@ -198,6 +202,9 @@ def update_illustration_status(
         )
 
     illustration.status = payload.status
+    ApprovalService.invalidate_active_approval(
+        db, book_id, f"Illustration status transitioned to {payload.status}", commit=False
+    )
     db.commit()
     db.refresh(illustration)
     return illustration
@@ -252,6 +259,9 @@ async def upload_illustration_asset(
     illustration.asset_source = "MANUAL_UPLOAD"
     illustration.status = "GENERATED"
 
+    ApprovalService.invalidate_active_approval(
+        db, book_id, "Illustration asset uploaded or replaced", commit=False
+    )
     db.commit()
     db.refresh(illustration)
     return illustration
@@ -297,6 +307,9 @@ def delete_illustration(
     if illustration.storage_key:
         LocalAssetStorage.delete_asset(illustration.storage_key)
 
+    ApprovalService.invalidate_active_approval(
+        db, book_id, "Illustration deleted", commit=False
+    )
     db.delete(illustration)
     db.commit()
     return None

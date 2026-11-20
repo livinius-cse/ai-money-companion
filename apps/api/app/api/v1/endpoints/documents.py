@@ -25,6 +25,7 @@ from app.services.cover_calculation import CoverCalculationService
 from app.services.interior_compiler import InteriorPDFCompiler
 from app.services.cover_compiler import FullJacketCoverCompiler
 from app.services.quality_validation import QualityValidationService
+from app.services.approval import ApprovalService
 from app.core.storage import LocalAssetStorage
 from app.api.v1.endpoints.books import get_user_book_or_404
 
@@ -196,6 +197,9 @@ def generate_interior_pdf(
             status="GENERATED",
         )
         db.add(doc_record)
+        ApprovalService.invalidate_active_approval(
+            db, book_id, f"Interior PDF regenerated (version {next_ver})", commit=False
+        )
         db.commit()
         db.refresh(doc_record)
         return doc_record
@@ -335,6 +339,9 @@ def generate_cover_pdf(
             status="GENERATED",
         )
         db.add(doc_record)
+        ApprovalService.invalidate_active_approval(
+            db, book_id, f"Cover PDF regenerated (version {next_ver})", commit=False
+        )
         db.commit()
         db.refresh(doc_record)
         return doc_record

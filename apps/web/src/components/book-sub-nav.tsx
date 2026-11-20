@@ -11,6 +11,12 @@ import {
   Compass,
   BookOpen,
   Palette,
+  CheckCircle2,
+  Package,
+  Upload,
+  BarChart3,
+  Search,
+  Lightbulb,
 } from "lucide-react";
 
 interface BookSubNavProps {
@@ -39,6 +45,12 @@ export function BookSubNav({
     { label: "Illustration Studio", href: `/books/${bookId}/illustrations`, icon: ImageIcon },
     { label: "Interior Layout", href: `/books/${bookId}/layout`, icon: BookOpen },
     { label: "Cover Design", href: `/books/${bookId}/cover`, icon: Palette },
+    { label: "Pre-Flight QA", href: `/books/${bookId}/preflight`, icon: CheckCircle2 },
+    { label: "KDP Export", href: `/books/${bookId}/export`, icon: Package },
+    { label: "Sales Import", href: `/books/${bookId}/sales-import`, icon: Upload },
+    { label: "Analytics", href: `/books/${bookId}/analytics`, icon: BarChart3 },
+    { label: "Research", href: `/books/${bookId}/research-assistance`, icon: Search },
+    { label: "Recommendations", href: `/books/${bookId}/business-recommendation`, icon: Lightbulb },
   ];
 
   return (

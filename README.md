@@ -102,5 +102,17 @@ cd apps/api
 - [ ] **Milestone 2: Mock AI Engine & Initial Services (Planning & Metadata)**
 - [ ] **Milestone 3: Product Studio — Concept, Content & Illustrations**
 - [ ] **Milestone 4: WeasyPrint Interior Layout, Cover Math & Quality Checks**
-- [ ] **Milestone 5: Pre-Flight QA & 5-Way Cryptographic Approval Gate**
-- [ ] **Milestone 6: KDP Package Exporter & Sales Ingestion**
+- [x] **Milestone 5: Pre-Flight QA & 5-Way Cryptographic Approval Gate**
+- [x] **Milestone 6: KDP Package Exporter & Sales Ingestion**
+
+### KDP sales report imports
+
+The importer separates Orders, KENP Read, and Prior Month's Royalties into distinct report types and requires the user to map detected file headers to report-specific fields, preview the validated records, and explicitly confirm an import. Orders data is treated as paid/free unit counts; KENP Read remains page counts; royalties are accepted only from the Prior Month's Royalties report. Royalty totals stay grouped by their reported currency.
+
+Official KDP references:
+- [KDP Reports](https://kdp.amazon.com/en_US/help/topic/GVTTXHKHVPAPBEDQ)
+- [Orders Report](https://kdp.amazon.com/en_US/help/topic/GNT7B2H74F5NJZW3)
+- [KENP Read](https://kdp.amazon.com/en_US/help/topic/GNRKU6NDYY2AGTTK)
+- [Prior Months' Royalties](https://kdp.amazon.com/en_US/help/topic/G200641190)
+
+**Official KDP field semantics are documented. Exact downloaded-file header compatibility must be confirmed against actual user-exported files.** Synthetic parser tests verify mapping and validation behavior only; they do not verify compatibility with Amazon-downloaded exports.

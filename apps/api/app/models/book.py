@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from app.models.chapter import Chapter
     from app.models.illustration import Illustration
     from app.models.book_document import BookDocument
+    from app.models.approval import BookApprovalSnapshot
+    from app.models.export import KDPExportPackage
+    from app.models.sales import SalesRecord
     from app.models.user import User
 
 
@@ -129,6 +132,18 @@ class Book(Base):
         back_populates="book",
         cascade="all, delete-orphan",
         order_by="BookDocument.version.desc()",
+    )
+    approvals: Mapped[List["BookApprovalSnapshot"]] = relationship(
+        "BookApprovalSnapshot",
+        back_populates="book",
+        cascade="all, delete-orphan",
+        order_by="BookApprovalSnapshot.snapshot_version.desc()",
+    )
+    exports: Mapped[List["KDPExportPackage"]] = relationship(
+        "KDPExportPackage",
+        back_populates="book",
+        cascade="all, delete-orphan",
+        order_by="KDPExportPackage.export_version.desc()",
     )
 
     def __repr__(self) -> str:

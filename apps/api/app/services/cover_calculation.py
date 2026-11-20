@@ -253,3 +253,28 @@ class CoverCalculationService:
             is_kdp_compliant_page_count=even_pages >= 75,
             min_page_warning=None if even_pages >= 75 else f"KDP Hardcover requires minimum 75 pages. Current interior has {even_pages} pages.",
         )
+
+    @classmethod
+    def calculate_full_jacket_cover(
+        cls,
+        print_format: str,
+        trim_size: str,
+        paper_type: str,
+        interior_page_count: int,
+        is_provisional: bool = False,
+        interior_document_id: Optional[str] = None,
+    ) -> CoverCalculationResponse:
+        """Unified cover calculation helper dispatching by format."""
+        if print_format.lower() == "hardcover":
+            return cls.calculate_hardcover_cover(
+                trim_size=trim_size,
+                paper_type=paper_type,
+                interior_page_count=interior_page_count,
+            )
+        return cls.calculate_paperback_cover(
+            trim_size=trim_size,
+            paper_type=paper_type,
+            interior_page_count=interior_page_count,
+            is_provisional=is_provisional,
+            interior_document_id=interior_document_id,
+        )
