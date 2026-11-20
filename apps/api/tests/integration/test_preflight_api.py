@@ -1,5 +1,9 @@
+import hashlib
 import io
+import json
+import zipfile
 from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -261,3 +265,56 @@ def test_successful_approval_and_snapshot_lifecycle(
     latest_hist = hist["items"][0]
     assert latest_hist["status"] == "INVALIDATED"
     assert "edited" in latest_hist["invalidation_reason"].lower()
+
+
+def test_approved_book_exports_and_downloads_verified_package(
+    client: TestClient,
+    test_user: User,
+    compliant_book: Book,
+):
+    headers = get_auth_headers(client, test_user)
+    qa_response = client.post(
+        f"/api/v1/books/{compliant_book.id}/preflight/run",
+        headers=headers,
+    )
+    assert qa_response.status_code == 200
+    assert qa_response.json()["is_ready_for_approval"] is True
+
+    approval_response = client.post(
+        f"/api/v1/books/{compliant_book.id}/preflight/approve",
+        json={"attestation": "I reviewed and approve this release-test edition."},
+        headers=headers,
+    )
+    assert approval_response.status_code == 201
+
+    export_response = client.post(
+        f"/api/v1/books/{compliant_book.id}/exports",
+        headers=headers,
+    )
+    assert export_response.status_code == 201
+    package = export_response.json()
+    assert package["file_size_bytes"] > 0
+    assert len(package["sha256_hash"]) == 64
+
+    download_response = client.get(
+        f"/api/v1/books/{compliant_book.id}/exports/{package['id']}/download",
+        headers=headers,
+    )
+    assert download_response.status_code == 200
+    assert download_response.headers["content-type"] == "application/zip"
+    assert hashlib.sha256(download_response.content).hexdigest() == package["sha256_hash"]
+
+    with zipfile.ZipFile(io.BytesIO(download_response.content)) as archive:
+        assert set(archive.namelist()) == {
+            "interior.pdf",
+            "cover.pdf",
+            "kdp_metadata_copysheet.txt",
+            "ai_disclosure_answers.txt",
+            "manifest.json",
+        }
+        manifest = json.loads(archive.read("manifest.json"))
+        assert manifest == package["manifest_data"]
+        for member_name, expected in manifest["files"].items():
+            contents = archive.read(member_name)
+            assert len(contents) == expected["size_bytes"]
+            assert hashlib.sha256(contents).hexdigest() == expected["sha256"]
