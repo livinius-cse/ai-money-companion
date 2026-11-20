@@ -82,11 +82,13 @@ export default function IllustrationStudioPage() {
 
   // AI Prompt Modal
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [aiTargetCount, setAiTargetCount] = useState(3);
+  const [aiTargetCount, setAiTargetCount] = useState(50);
   const [aiStylePreset, setAiStylePreset] = useState("modern_clean_vector");
   const [aiInstructions, setAiInstructions] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<IllustrationPromptItem[]>([]);
+  const [addingAllPrompts, setAddingAllPrompts] = useState(false);
+  const [bulkAddProgress, setBulkAddProgress] = useState(0);
 
   // Approval Modal
   const [approvalTarget, setApprovalTarget] = useState<Illustration | null>(null);
@@ -169,7 +171,14 @@ export default function IllustrationStudioPage() {
           }),
         }
       );
-      setGeneratedPrompts(res.prompts || []);
+      const seen = new Set<string>();
+      const newPrompts = (res.prompts || []).filter((item) => {
+        const key = item.prompt.trim().toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return !illustrations.some((existing) => existing.prompt.trim().toLowerCase() === key);
+      });
+      setGeneratedPrompts(newPrompts);
     } catch (err) {
       alert("Failed to generate illustration prompts.");
     } finally {
@@ -177,11 +186,17 @@ export default function IllustrationStudioPage() {
     }
   };
 
+  const getChapterIdForPlacement = (placement: string) => {
+    const normalized = placement.trim().toLowerCase();
+    return chapters.find((chapter) => chapter.title.trim().toLowerCase() === normalized)?.id ?? null;
+  };
+
   const handleAddAIPrompt = async (item: IllustrationPromptItem) => {
     try {
       const created = await apiClient<Illustration>(`/api/v1/books/${bookId}/illustrations`, {
         method: "POST",
         body: JSON.stringify({
+          chapter_id: getChapterIdForPlacement(item.suggested_placement),
           prompt: item.prompt,
           description: item.description,
           style_preset: item.style_preset,
@@ -194,6 +209,44 @@ export default function IllustrationStudioPage() {
       setGeneratedPrompts((prev) => prev.filter((p) => p !== item));
     } catch (err) {
       alert("Failed to add prompt.");
+    }
+  };
+
+  const handleAddAllAIPrompts = async () => {
+    const queue = [...generatedPrompts];
+    if (queue.length === 0 || addingAllPrompts) return;
+
+    const saved: Illustration[] = [];
+    setAddingAllPrompts(true);
+    setBulkAddProgress(0);
+    try {
+      for (const item of queue) {
+        const created = await apiClient<Illustration>(`/api/v1/books/${bookId}/illustrations`, {
+          method: "POST",
+          body: JSON.stringify({
+            chapter_id: getChapterIdForPlacement(item.suggested_placement),
+            prompt: item.prompt,
+            description: item.description,
+            style_preset: item.style_preset,
+            position_description: item.suggested_placement,
+            status: "PROMPT",
+          }),
+        });
+        saved.push(created);
+        setBulkAddProgress(saved.length);
+      }
+
+      const savedPrompts = new Set(saved.map((item) => item.prompt));
+      setIllustrations((prev) => [...saved, ...prev]);
+      setGeneratedPrompts((prev) => prev.filter((item) => !savedPrompts.has(item.prompt)));
+      alert(`Added all ${saved.length} prompts to Studio.`);
+    } catch (err: any) {
+      const savedPrompts = new Set(saved.map((item) => item.prompt));
+      setIllustrations((prev) => [...saved, ...prev]);
+      setGeneratedPrompts((prev) => prev.filter((item) => !savedPrompts.has(item.prompt)));
+      alert(`Added ${saved.length} prompts before an error. The remaining prompts are still available to retry. ${err?.message || ""}`);
+    } finally {
+      setAddingAllPrompts(false);
     }
   };
 
@@ -630,9 +683,9 @@ export default function IllustrationStudioPage() {
                 <input
                   type="number"
                   min={1}
-                  max={5}
+                  max={50}
                   value={aiTargetCount}
-                  onChange={(e) => setAiTargetCount(parseInt(e.target.value, 10))}
+                  onChange={(e) => setAiTargetCount(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
                   className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white"
                 />
               </div>
@@ -654,9 +707,18 @@ export default function IllustrationStudioPage() {
             {/* Generated Prompts List */}
             {generatedPrompts.length > 0 && (
               <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  Generated Prompts ({generatedPrompts.length})
-                </h4>
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                    Generated Prompts ({generatedPrompts.length})
+                  </h4>
+                  <button
+                    onClick={handleAddAllAIPrompts}
+                    disabled={addingAllPrompts || generatedPrompts.length === 0}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold disabled:opacity-50"
+                  >
+                    {addingAllPrompts ? `Adding ${bulkAddProgress}/${generatedPrompts.length}...` : "Add All to Studio"}
+                  </button>
+                </div>
                 {generatedPrompts.map((item, idx) => (
                   <div
                     key={idx}
@@ -666,7 +728,8 @@ export default function IllustrationStudioPage() {
                       <span>{item.suggested_placement}</span>
                       <button
                         onClick={() => handleAddAIPrompt(item)}
-                        className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-1"
+                        disabled={addingAllPrompts}
+                        className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-1 disabled:opacity-50"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Add to Studio</span>
