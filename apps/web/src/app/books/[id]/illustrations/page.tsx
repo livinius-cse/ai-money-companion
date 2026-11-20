@@ -674,7 +674,11 @@ export default function IllustrationStudioPage() {
             </div>
 
             <p className="text-xs text-slate-400">
-              Generates tailored illustration prompts matching your book topic and selected style preset.
+              Generates up to 50 distinct illustration prompts matching your book topic and selected style preset.
+              Existing matching prompts are skipped automatically.
+            </p>
+            <p className="text-[11px] text-slate-500">
+              This creates text prompts only. Generate or source the actual images separately, then upload them to each prompt card.
             </p>
 
             <div className="grid grid-cols-2 gap-3">
