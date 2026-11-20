@@ -83,7 +83,7 @@ export default function IllustrationStudioPage() {
   // AI Prompt Modal
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [aiTargetCount, setAiTargetCount] = useState(50);
-  const [aiStylePreset, setAiStylePreset] = useState("modern_clean_vector");
+  const [aiStylePreset, setAiStylePreset] = useState("clean_minimalist_line_art");
   const [aiInstructions, setAiInstructions] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<IllustrationPromptItem[]>([]);
@@ -515,7 +515,7 @@ export default function IllustrationStudioPage() {
                         {chap ? (
                           <span className="text-amber-400">Ch. {chap.chapter_number}</span>
                         ) : (
-                          <span>General Book</span>
+                          <span>{ill.position_description || "General Book"}</span>
                         )}
                         <span>•</span>
                         <span className="truncate">{ill.style_preset || "Standard Style"}</span>
