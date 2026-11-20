@@ -641,8 +641,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Pets and Playful Companions"
             },
             {
-                    "prompt": "A cute floppy-eared pet rabbit sitting beside a small basket of hay, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly floppy-eared pet rabbit coloring page for ages 4–8.",
+                    "prompt": "A cute small pet chinchilla sitting beside a wooden chew toy and a little hay pile, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
+                    "description": "A simple, friendly pet chinchilla coloring page for ages 4–8.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Pets and Playful Companions"
             },
