@@ -97,7 +97,34 @@ class MockAIProvider(BaseAIProvider):
         self._check_simulated_failure()
 
         prompt_lower = prompt.lower()
-        topic_key = "finance" if any(k in prompt_lower for k in ["money", "finance", "budget", "wealth", "invest", "debt"]) else "default"
+
+        # Classify specific product formats before broad subject categories.
+        # Avoid the generic phrase "target page budget" accidentally selecting
+        # the finance fixture for every book.
+        coloring_terms = (
+            "coloring book",
+            "colouring book",
+            "coloring pages",
+            "colouring pages",
+        )
+        finance_terms = (
+            "personal finance",
+            "financial planning",
+            "money management",
+            "budgeting",
+            "debt repayment",
+            "debt payoff",
+            "investing",
+            "wealth building",
+            "cash flow",
+            "credit card debt",
+        )
+        if any(term in prompt_lower for term in coloring_terms):
+            topic_key = "coloring"
+        elif any(term in prompt_lower for term in finance_terms):
+            topic_key = "finance"
+        else:
+            topic_key = "default"
 
         data: Any
         if issubclass(response_model, BookPlanResponse):
