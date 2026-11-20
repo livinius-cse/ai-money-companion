@@ -58,7 +58,7 @@ class IllustrationResponse(BaseModel):
 
 class IllustrationPromptGenerateRequest(BaseModel):
     chapter_id: Optional[str] = None
-    target_count: int = Field(default=3, ge=1, le=10)
+    target_count: int = Field(default=3, ge=1, le=50)
     style_preset: Optional[str] = "clean_minimalist_line_art"
     visual_instructions: Optional[str] = None
 
