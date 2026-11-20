@@ -389,8 +389,8 @@ DEFAULT_MANUSCRIPT_FIXTURES = {
 DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
     "coloring": [
             {
-                    "prompt": "A cute baby fox sitting beside a spotted mushroom and looking at a tiny butterfly, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly baby fox coloring page for ages 4–8.",
+                    "prompt": "Cute baby fox sitting beside a small mushroom, centered single animal composition, very bold smooth black closed outlines, large simple coloring areas, minimal background, pure white background, no gray, no shading, no gradients, no text, print-ready children's coloring book line art.",
+                    "description": "A friendly fox in a simple woodland scene.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Woodland and Forest Friends"
             },
@@ -443,8 +443,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Woodland and Forest Friends"
             },
             {
-                    "prompt": "A cute sweet farm cow standing beside a wooden fence and a tiny flower, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly sweet farm cow coloring page for ages 4–8.",
+                    "prompt": "Cute little cow with large friendly eyes standing in a simple farmyard, bold black closed outlines, broad uncluttered coloring spaces, minimal fence and grass details, white background, no shading, no gray, no text, printable kids coloring book line art.",
+                    "description": "A friendly farm cow with a simple setting.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Farmyard Friends"
             },
@@ -497,8 +497,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Farmyard Friends"
             },
             {
-                    "prompt": "A cute young lion cub sitting beside a broad jungle leaf, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly young lion cub coloring page for ages 4–8.",
+                    "prompt": "Adorable baby elephant standing and smiling, simple rounded shapes, thick clean black closed outlines, large open spaces for crayons, very few background details, pure white background, no gray, no shadows, no color, no text, print-ready children's coloring page.",
+                    "description": "A smiling elephant with beginner-friendly shapes.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Safari and Jungle Animals"
             },
@@ -551,8 +551,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Safari and Jungle Animals"
             },
             {
-                    "prompt": "A cute friendly dolphin jumping above two smooth ocean waves, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly friendly dolphin coloring page for ages 4–8.",
+                    "prompt": "Sweet smiling dolphin jumping above two simple waves, large smooth areas, thick uniform black outlines, clean closed shapes, minimal details, plain white background, no color, no gray, no gradients, no text, printable preschool coloring page.",
+                    "description": "An easy-to-color dolphin and wave design.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Ocean and Polar Pals"
             },
@@ -605,8 +605,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Ocean and Polar Pals"
             },
             {
-                    "prompt": "A cute fluffy kitten sitting beside a ball of yarn and a short toy mouse, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly fluffy kitten coloring page for ages 4–8.",
+                    "prompt": "Adorable fluffy kitten sitting with a small ball of yarn, centered composition, thick clean black outlines, large open coloring areas, minimal background, pure white page, no shadows or gray, no text, kids coloring book line art.",
+                    "description": "A playful kitten for young children.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Pets and Playful Companions"
             },
@@ -647,8 +647,8 @@ DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
                     "suggested_placement": "Pets and Playful Companions"
             },
             {
-                    "prompt": "A cute round butterfly opening large symmetrical wings with simple inner patterns, centered single-subject composition, very bold smooth black closed outlines, large simple coloring areas, child-friendly rounded shapes, minimal uncluttered background, pure white background, no gray, no shading, no gradients, no color fills, no text, no border, print-ready 8.5 x 11 inch children's coloring book line art.",
-                    "description": "A simple, friendly round butterfly coloring page for ages 4–8.",
+                    "prompt": "Cute round butterfly with large symmetrical wings and simple decorative shapes, bold black closed outlines, broad coloring spaces, no intricate patterns, plain white background, no gray, no color, no text, printable children's coloring page.",
+                    "description": "A simple butterfly design with broad wing spaces.",
                     "style_preset": "bold_kids_coloring_line_art",
                     "suggested_placement": "Birds, Bugs and Tiny Creatures"
             },
