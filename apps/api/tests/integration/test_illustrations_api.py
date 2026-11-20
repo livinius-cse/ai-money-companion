@@ -104,7 +104,7 @@ def test_cloudflare_ai_image_generation_stores_private_asset(
     headers = get_auth_headers(client, test_user)
     monkeypatch.setattr(settings, "CLOUDFLARE_ACCOUNT_ID", "test-account")
     monkeypatch.setattr(settings, "CLOUDFLARE_API_TOKEN", "test-token")
-    generated_bytes = b"\\xff\\xd8\\xff" + b"\\x00" * 200
+    generated_bytes = bytes([255, 216, 255]) + bytes(200)
 
     async def fake_generate_image(self, prompt: str):
         assert "black-and-white coloring book illustration" in prompt
