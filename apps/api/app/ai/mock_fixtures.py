@@ -1,6 +1,71 @@
 """Deterministic publishing domain fixtures for MockAIProvider."""
 
 DEFAULT_PLANNING_FIXTURES = {
+    "coloring": {
+        "title_options": [
+            "Limona: Cute Animals Coloring Book for Kids",
+            "My First Big Book of Cute Animals to Color",
+            "Adorable Animal Friends: A Simple Coloring Book for Kids",
+        ],
+        "subtitle_options": [
+            "50 Easy Animal Designs for Little Artists Ages 4-8",
+            "Big Bold Pictures with Farm, Forest, Safari and Ocean Animals",
+            "A Fun First Coloring Adventure with 50 Friendly Creatures",
+        ],
+        "target_reader_avatar": "Children aged 4-8 who enjoy simple animal pictures, with parents and caregivers looking for age-appropriate, easy-to-color activities.",
+        "front_matter_pages": 4,
+        "back_matter_pages": 2,
+        "chapters": [
+            {
+                "chapter_number": 1,
+                "title": "Woodland and Forest Friends",
+                "summary": "Nine friendly forest animals such as foxes, bears, deer, squirrels, hedgehogs, owls, raccoons, rabbits and wolves. Give each design bold closed outlines, large open spaces and a simple background. Pair every coloring page with a blank reverse page.",
+                "key_takeaways": ["9 animal designs", "Bold, closed outlines", "One blank reverse page per design"],
+                "estimated_word_count": 100,
+                "allocated_pages": 18,
+            },
+            {
+                "chapter_number": 2,
+                "title": "Farmyard Friends",
+                "summary": "Nine easy farm animal designs including cows, pigs, sheep, horses, chickens, ducks, goats, donkeys and friendly farm dogs. Keep each animal centered, cheerful and simple for young colorists, with a blank reverse page.",
+                "key_takeaways": ["9 animal designs", "Simple recognizable farm animals", "Single-sided coloring pages"],
+                "estimated_word_count": 100,
+                "allocated_pages": 18,
+            },
+            {
+                "chapter_number": 3,
+                "title": "Safari and Jungle Animals",
+                "summary": "Nine cute safari and jungle animals such as lions, elephants, giraffes, zebras, monkeys, hippos, crocodiles, pandas and tigers. Use large shapes, friendly expressions and uncluttered scenes, with a blank reverse page after each design.",
+                "key_takeaways": ["9 animal designs", "Friendly expressions", "Large coloring areas"],
+                "estimated_word_count": 100,
+                "allocated_pages": 18,
+            },
+            {
+                "chapter_number": 4,
+                "title": "Ocean and Polar Pals",
+                "summary": "Nine approachable sea and cold-climate creatures including dolphins, whales, turtles, octopuses, starfish, penguins, seals, polar bears and sea otters. Use thick outlines and avoid tiny details; pair each illustration with a blank reverse page.",
+                "key_takeaways": ["9 animal designs", "Ocean and polar variety", "No intricate tiny details"],
+                "estimated_word_count": 100,
+                "allocated_pages": 18,
+            },
+            {
+                "chapter_number": 5,
+                "title": "Pets and Playful Companions",
+                "summary": "Seven familiar pets such as kittens, puppies, rabbits, guinea pigs, parrots, hamsters and goldfish. Make every pose warm and easy to recognize, with one blank reverse page per coloring design.",
+                "key_takeaways": ["7 pet designs", "Familiar home companions", "One-sided coloring artwork"],
+                "estimated_word_count": 100,
+                "allocated_pages": 14,
+            },
+            {
+                "chapter_number": 6,
+                "title": "Birds, Bugs and Tiny Creatures",
+                "summary": "Seven cheerful small creatures such as butterflies, ladybugs, bees, caterpillars, songbirds, frogs and snails. Keep shapes bold and uncomplicated, and include a blank reverse page after every coloring page.",
+                "key_takeaways": ["7 small-creature designs", "Bold beginner-friendly shapes", "Blank reverse pages"],
+                "estimated_word_count": 100,
+                "allocated_pages": 14,
+            },
+        ],
+    },
     "finance": {
         "title_options": [
             "The 30-Day Money Reset",
@@ -118,6 +183,51 @@ DEFAULT_PLANNING_FIXTURES = {
 }
 
 DEFAULT_METADATA_FIXTURES = {
+    "coloring": {
+        "keywords": [
+            "cute animal coloring book",
+            "easy coloring pages for kids",
+            "animals coloring book ages 4-8",
+            "bold easy animal pictures",
+            "preschool coloring activities",
+            "farm forest safari animals",
+            "first coloring book for children",
+        ],
+        "keyword_advisories": [
+            "Suggested phrases only; verify category and keyword relevance in KDP before publishing."
+        ],
+        "categories": [
+            "Children's Books > Activities, Crafts & Games > Coloring Books",
+            "Children's Books > Animals",
+            "Children's Books > Growing Up & Facts of Life > Friendship",
+        ],
+        "description_html": (
+            "<h4>Meet 50 Cute Animal Friends to Color!</h4>"
+            "<p>Little artists can enjoy a cheerful collection of easy animal pictures made for young children. "
+            "Explore friendly forest, farm, safari, ocean, pet and tiny-creature favorites.</p>"
+            "<p><b>Inside this coloring adventure:</b></p>"
+            "<ul>"
+            "<li>50 simple, friendly animal designs.</li>"
+            "<li>Bold outlines and large spaces that are easy for little hands to color.</li>"
+            "<li>A variety of familiar animals to encourage creativity and imagination.</li>"
+            "<li>Single-sided artwork planning with blank reverse pages.</li>"
+            "</ul>"
+            "<p>A playful activity for children ages 4-8. Review every illustration and all book details before publishing.</p>"
+        ),
+        "plain_text_summary": "A beginner-friendly coloring book with 50 cute animal designs, bold outlines and large coloring spaces for children ages 4-8.",
+        "unconfirmed_disclosure_recommendation": {
+            "text_creation_method": "ai_assisted",
+            "text_tools_used": ["AI Money Companion Publisher Suite"],
+            "text_editing_extent": "extensive_editing",
+            "image_creation_method": "none",
+            "image_tools_used": [],
+            "image_editing_extent": None,
+            "translation_creation_method": "none",
+            "translation_tools_used": [],
+            "translation_editing_extent": None,
+            "author_confirmed": False,
+        },
+    },
     "finance": {
         "keywords": [
             "personal finance for beginners",
@@ -213,6 +323,19 @@ DEFAULT_METADATA_FIXTURES = {
 
 
 DEFAULT_MANUSCRIPT_FIXTURES = {
+    "coloring": {
+        "chapter_title": "How to Enjoy Your Animal Coloring Book",
+        "markdown_content": (
+            "# Welcome, Little Artist!\n\n"
+            "Get your favorite crayons, colored pencils or markers ready. This book is filled with friendly animals waiting for your colors.\n\n"
+            "## Coloring Tips\n\n"
+            "- Start with your favorite animal and choose any colors you like.\n"
+            "- Color slowly inside the bold outlines, or make your own patterns.\n"
+            "- Try a new color combination and make every page your own.\n"
+            "- Place a spare sheet behind the page when using markers.\n\n"
+            "There are no wrong colors. Have fun bringing each animal friend to life!"
+        ),
+    },
     "finance": {
         "chapter_title": "Taking Stock: The Reality Check Audit",
         "markdown_content": (
@@ -264,6 +387,44 @@ DEFAULT_MANUSCRIPT_FIXTURES = {
 }
 
 DEFAULT_ILLUSTRATION_PROMPT_FIXTURES = {
+    "coloring": [
+        {
+            "prompt": "Cute baby fox sitting beside a small mushroom, centered single animal composition, very bold smooth black closed outlines, large simple coloring areas, minimal background, pure white background, no gray, no shading, no gradients, no text, print-ready children's coloring book line art.",
+            "description": "A friendly fox in a simple woodland scene.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Woodland and Forest Friends",
+        },
+        {
+            "prompt": "Adorable baby elephant standing and smiling, simple rounded shapes, thick clean black closed outlines, large open spaces for crayons, very few background details, pure white background, no gray, no shadows, no color, no text, print-ready children's coloring page.",
+            "description": "A smiling elephant with beginner-friendly shapes.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Safari and Jungle Animals",
+        },
+        {
+            "prompt": "Cute little cow with large friendly eyes standing in a simple farmyard, bold black closed outlines, broad uncluttered coloring spaces, minimal fence and grass details, white background, no shading, no gray, no text, printable kids coloring book line art.",
+            "description": "A friendly farm cow with a simple setting.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Farmyard Friends",
+        },
+        {
+            "prompt": "Sweet smiling dolphin jumping above two simple waves, large smooth areas, thick uniform black outlines, clean closed shapes, minimal details, plain white background, no color, no gray, no gradients, no text, printable preschool coloring page.",
+            "description": "An easy-to-color dolphin and wave design.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Ocean and Polar Pals",
+        },
+        {
+            "prompt": "Adorable fluffy kitten sitting with a small ball of yarn, centered composition, thick clean black outlines, large open coloring areas, minimal background, pure white page, no shadows or gray, no text, kids coloring book line art.",
+            "description": "A playful kitten for young children.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Pets and Playful Companions",
+        },
+        {
+            "prompt": "Cute round butterfly with large symmetrical wings and simple decorative shapes, bold black closed outlines, broad coloring spaces, no intricate patterns, plain white background, no gray, no color, no text, printable children's coloring page.",
+            "description": "A simple butterfly design with broad wing spaces.",
+            "style_preset": "bold_kids_coloring_line_art",
+            "suggested_placement": "Birds, Bugs and Tiny Creatures",
+        },
+    ],
     "finance": [
         {
             "prompt": "Minimalist vector diagram showing the debt snowball method vs debt avalanche method, clean geometric shapes, professional finance editorial style, high contrast, white background.",

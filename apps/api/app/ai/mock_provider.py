@@ -97,12 +97,54 @@ class MockAIProvider(BaseAIProvider):
         self._check_simulated_failure()
 
         prompt_lower = prompt.lower()
-        topic_key = "finance" if any(k in prompt_lower for k in ["money", "finance", "budget", "wealth", "invest", "debt"]) else "default"
+
+        # Classify specific product formats before broad subject categories.
+        # Avoid the generic phrase "target page budget" accidentally selecting
+        # the finance fixture for every book.
+        coloring_terms = (
+            "coloring book",
+            "colouring book",
+            "coloring pages",
+            "colouring pages",
+        )
+        finance_terms = (
+            "money",
+            "finance",
+            "financial planning",
+            "budgeting",
+            "debt",
+            "investing",
+            "wealth",
+            "cash flow",
+            "credit card",
+        )
+        if any(term in prompt_lower for term in coloring_terms):
+            topic_key = "coloring"
+        elif any(term in prompt_lower for term in finance_terms):
+            topic_key = "finance"
+        else:
+            topic_key = "default"
 
         data: Any
         if issubclass(response_model, BookPlanResponse):
             fix = DEFAULT_PLANNING_FIXTURES[topic_key]
-            total_pages = fix["front_matter_pages"] + sum(c["allocated_pages"] for c in fix["chapters"]) + fix["back_matter_pages"]
+            chapters = [dict(chapter) for chapter in fix["chapters"]]
+            front_matter_pages = fix["front_matter_pages"]
+            back_matter_pages = fix["back_matter_pages"]
+            total_pages = front_matter_pages + sum(c["allocated_pages"] for c in chapters) + back_matter_pages
+
+            # Keep the generic deterministic mock outline valid for hardcover.
+            # The real planning service still performs authoritative KDP validation.
+            # A 100-page mock plan provides a valid baseline for hardcover workflows.
+            is_hardcover = "format: 'hardcover'" in prompt_lower
+            if is_hardcover and topic_key == "default" and total_pages < 100 and chapters:
+                pages_to_add = 100 - total_pages
+                for index in range(pages_to_add):
+                    chapters[index % len(chapters)]["allocated_pages"] += 1
+                total_pages = front_matter_pages + sum(
+                    chapter["allocated_pages"] for chapter in chapters
+                ) + back_matter_pages
+
             is_odd = total_pages % 2 != 0
             notice = None
             if is_odd:
@@ -112,9 +154,9 @@ class MockAIProvider(BaseAIProvider):
                 title_options=fix["title_options"],
                 subtitle_options=fix["subtitle_options"],
                 target_reader_avatar=fix["target_reader_avatar"],
-                front_matter_pages=fix["front_matter_pages"],
-                chapters=fix["chapters"],
-                back_matter_pages=fix["back_matter_pages"],
+                front_matter_pages=front_matter_pages,
+                chapters=chapters,
+                back_matter_pages=back_matter_pages,
                 total_calculated_pages=total_pages,
                 is_odd_page_count=is_odd,
                 kdp_manufacturing_notice=notice,
