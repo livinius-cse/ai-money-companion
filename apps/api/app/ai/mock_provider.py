@@ -218,7 +218,7 @@ class MockAIProvider(BaseAIProvider):
             fix_prompts = DEFAULT_ILLUSTRATION_PROMPT_FIXTURES.get(
                 topic_key, DEFAULT_ILLUSTRATION_PROMPT_FIXTURES["default"]
             )
-            count_match = re.search(r"Target Prompts:\\s*(\\d+)", prompt, re.IGNORECASE)
+            count_match = re.search(r"Target Prompts:\s*(\d+)", prompt, re.IGNORECASE)
             requested_count = int(count_match.group(1)) if count_match else len(fix_prompts)
             # The offline coloring fixture contains 50 curated, distinct animal prompts.
             # Other topic fixtures intentionally remain shorter and are sliced to request size.
