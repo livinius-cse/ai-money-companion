@@ -1,6 +1,7 @@
 import base64
 import binascii
 import logging
+import re
 from typing import Tuple
 
 import httpx
@@ -47,6 +48,10 @@ class CloudflareImageProvider:
             raise CloudflareImageGenerationError(
                 503,
                 "Cloudflare Workers AI is not configured. Add CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to the backend .env file.",
+            )
+        if not re.fullmatch(r"[0-9a-fA-F]{32}", account_id):
+            raise CloudflareImageGenerationError(
+                503, "CLOUDFLARE_ACCOUNT_ID must be the 32-character Account ID from Cloudflare."
             )
 
         prompt = f"{illustration_prompt.strip()}{COLORING_PAGE_STYLE}"
