@@ -570,7 +570,7 @@ export default function IllustrationStudioPage() {
                       <img
                         src={`/api/v1/books/${bookId}/illustrations/${ill.id}/asset`}
                         alt={ill.prompt}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain bg-white"
                       />
                     ) : (
                       <div className="text-center space-y-2 p-4">
