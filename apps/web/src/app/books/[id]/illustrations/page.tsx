@@ -288,6 +288,7 @@ export default function IllustrationStudioPage() {
     const failures: string[] = [];
     let succeeded = 0;
     let attempted = 0;
+    let quotaReached = false;
 
     for (const ill of queue) {
       setGeneratingImageIds((prev) => [...prev, ill.id]);
@@ -297,21 +298,16 @@ export default function IllustrationStudioPage() {
       } catch (err: any) {
         const message = err?.message || "Image generation failed.";
         failures.push(`${ill.description || ill.prompt.slice(0, 70)}: ${message}`);
-        // A quota or rate-limit response should stop the queue instead of
-        // sending dozens of requests that are expected to fail as well.
+        // Stop on quota/rate-limit errors rather than issuing requests that will also fail.
         if (err?.status === 429 || /429|quota|rate.?limit/i.test(message)) {
-          attempted += 1;
-          setBulkImageProgress({ completed: attempted, total: queue.length });
-          setGeneratingImageIds((prev) => prev.filter((id) => id !== ill.id));
-          break;
+          quotaReached = true;
         }
       } finally {
         setGeneratingImageIds((prev) => prev.filter((id) => id !== ill.id));
-        if (attempted < queue.length && !failures.some((failure) => failure.startsWith(ill.description || ill.prompt.slice(0, 70)))) {
-          attempted += 1;
-          setBulkImageProgress({ completed: attempted, total: queue.length });
-        }
+        attempted += 1;
+        setBulkImageProgress({ completed: attempted, total: queue.length });
       }
+      if (quotaReached) break;
     }
 
     setBulkImageFailures(failures);
