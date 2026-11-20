@@ -38,6 +38,7 @@ class IllustrationPromptService:
             f"Book Topic: {book_topic}\n"
             f"Style Preset: {req.style_preset or 'modern_clean_vector'}\n"
             f"Target Prompts: {req.target_count}\n"
+            f"Generate exactly {req.target_count} distinct prompts. Each prompt must feature a different primary animal or visual subject; never repeat a subject or composition. Keep every prompt consistent with the selected style preset and suitable for a print-ready KDP interior.\n"
         )
         if chapter_title:
             prompt += f"Chapter Context: {chapter_title} - {chapter_summary or ''}\n"
