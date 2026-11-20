@@ -108,16 +108,15 @@ class MockAIProvider(BaseAIProvider):
             "colouring pages",
         )
         finance_terms = (
-            "personal finance",
+            "money",
+            "finance",
             "financial planning",
-            "money management",
             "budgeting",
-            "debt repayment",
-            "debt payoff",
+            "debt",
             "investing",
-            "wealth building",
+            "wealth",
             "cash flow",
-            "credit card debt",
+            "credit card",
         )
         if any(term in prompt_lower for term in coloring_terms):
             topic_key = "coloring"
