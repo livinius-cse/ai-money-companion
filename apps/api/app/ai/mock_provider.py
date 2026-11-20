@@ -1,5 +1,6 @@
 import time
 import hashlib
+import re
 from typing import Type, TypeVar, Optional, Any
 from pydantic import BaseModel
 from app.ai.base import BaseAIProvider, AIResponseEnvelope, AIExecutionMetadata
@@ -214,8 +215,17 @@ class MockAIProvider(BaseAIProvider):
                 word_count=len(regen_text.split()),
             )
         elif issubclass(response_model, IllustrationPromptGenerateResponse):
-            fix_prompts = DEFAULT_ILLUSTRATION_PROMPT_FIXTURES.get(topic_key, DEFAULT_ILLUSTRATION_PROMPT_FIXTURES["default"])
-            items = [IllustrationPromptItem(**p) for p in fix_prompts]
+            fix_prompts = DEFAULT_ILLUSTRATION_PROMPT_FIXTURES.get(
+                topic_key, DEFAULT_ILLUSTRATION_PROMPT_FIXTURES["default"]
+            )
+            count_match = re.search(r"Target Prompts:\s*(\d+)", prompt, re.IGNORECASE)
+            requested_count = int(count_match.group(1)) if count_match else len(fix_prompts)
+            # The offline coloring fixture contains 50 curated, distinct animal prompts.
+            # Other topic fixtures intentionally remain shorter and are sliced to request size.
+            items = [
+                IllustrationPromptItem(**item)
+                for item in fix_prompts[:requested_count]
+            ]
             data = IllustrationPromptGenerateResponse(prompts=items)
         elif issubclass(response_model, ResearchAssistanceResponse):
             data = ResearchAssistanceResponse(

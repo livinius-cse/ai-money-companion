@@ -58,6 +58,44 @@ def test_illustrations_crud_and_ai_prompts(client: TestClient, test_user: User):
     assert len(gen_res.json()["prompts"]) == 3
 
 
+def test_coloring_book_generates_50_unique_animal_prompts(client: TestClient, test_user: User):
+    headers = get_auth_headers(client, test_user)
+
+    book_res = client.post(
+        "/api/v1/books",
+        json={
+            "title": "Limona: Cute Animals Coloring Book for Kids",
+            "topic": "Children's coloring book featuring cute animal designs with bold outlines for ages 4–8.",
+        },
+        headers=headers,
+    )
+    assert book_res.status_code == 201
+    book_id = book_res.json()["id"]
+
+    gen_res = client.post(
+        f"/api/v1/books/{book_id}/illustrations/generate-prompts",
+        json={
+            "target_count": 50,
+            "style_preset": "clean_minimalist_line_art",
+        },
+        headers=headers,
+    )
+    assert gen_res.status_code == 200
+
+    prompts = gen_res.json()["prompts"]
+    assert len(prompts) == 50
+    assert len({item["prompt"] for item in prompts}) == 50
+    assert len({item["description"] for item in prompts}) == 50
+    assert {item["suggested_placement"] for item in prompts} == {
+        "Woodland and Forest Friends",
+        "Farmyard Friends",
+        "Safari and Jungle Animals",
+        "Ocean and Polar Pals",
+        "Pets and Playful Companions",
+        "Birds, Bugs and Tiny Creatures",
+    }
+
+
 def test_illustration_upload_asset_retrieval_and_approval(client: TestClient, test_user: User):
     headers = get_auth_headers(client, test_user)
 
