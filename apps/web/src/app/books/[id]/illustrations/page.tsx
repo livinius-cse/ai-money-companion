@@ -276,7 +276,7 @@ export default function IllustrationStudioPage() {
   };
 
   const handleGenerateAllImages = async () => {
-    const queue = illustrations.filter((ill) => !ill.storage_key);
+    const queue = illustrations.filter((ill) => !ill.storage_key && !generatingImageIds.includes(ill.id));
     if (queue.length === 0 || bulkGeneratingImages) return;
     if (!confirm(`Generate images for all ${queue.length} illustrations using Cloudflare Workers AI? This uses your daily Workers AI Neurons quota.`)) {
       return;
@@ -484,7 +484,7 @@ export default function IllustrationStudioPage() {
             </button>
             <button
               onClick={handleGenerateAllImages}
-              disabled={pendingImageCount === 0 || bulkGeneratingImages}
+              disabled={pendingImageCount === 0 || bulkGeneratingImages || generatingImageIds.length > 0}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Sparkles className="w-4 h-4" />
@@ -501,6 +501,8 @@ export default function IllustrationStudioPage() {
         </div>
 
         {/* Filter Strip */}
+        <p className="text-[11px] text-slate-500">Workers AI Free includes 10,000 Neurons per day. Image usage varies; generation stops on quota or rate-limit errors.</p>
+
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           {["ALL", "PROMPT", "PLACEHOLDER", "GENERATED", "APPROVED_FINAL"].map((st) => (
             <button
@@ -636,7 +638,7 @@ export default function IllustrationStudioPage() {
                     )}
 
                     {/* Action Footer */}
-                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
                       {/* Upload / Re-upload Button */}
                       <button
                         onClick={() => triggerUpload(ill.id)}
