@@ -299,7 +299,7 @@ export default function IllustrationStudioPage() {
         const message = err?.message || "Image generation failed.";
         failures.push(`${ill.description || ill.prompt.slice(0, 70)}: ${message}`);
         // Stop on quota/rate-limit errors rather than issuing requests that will also fail.
-        if (err?.status === 429 || /429|quota|rate.?limit/i.test(message)) {
+        if (err?.status === 429 || err?.status === 503 || /429|quota|rate.?limit|credential|not configured/i.test(message)) {
           quotaReached = true;
         }
       } finally {
