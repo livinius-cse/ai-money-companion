@@ -85,8 +85,10 @@ test.describe("Milestone 4 — Publishing Document Engine & Quality Validation R
     console.log("M4 Step 3b: Adding additional chapters to satisfy KDP 24-page paperback threshold...");
     const cookies = await page.context().cookies();
     const csrfCookie = cookies.find((c) => c.name === "csrf_token");
+    const apiOrigin = process.env.PLAYWRIGHT_API_ORIGIN || "http://127.0.0.1:8000";
+    const webOrigin = new URL(page.url()).origin;
     for (let i = 2; i <= 24; i++) {
-      await page.request.post(`http://127.0.0.1:8000/api/v1/books/${bookId}/chapters`, {
+      await page.request.post(`${apiOrigin}/api/v1/books/${bookId}/chapters`, {
         data: {
           chapter_number: i,
           title: `System Execution Principle ${i}`,
@@ -94,7 +96,7 @@ test.describe("Milestone 4 — Publishing Document Engine & Quality Validation R
         },
         headers: {
           "X-CSRF-Token": csrfCookie?.value || "",
-          "Origin": "http://127.0.0.1:3000",
+          "Origin": webOrigin,
         },
       });
     }

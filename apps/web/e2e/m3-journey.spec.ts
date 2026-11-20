@@ -26,6 +26,19 @@ test.describe("Milestone 3 — Product Studio & Content Engine Real Browser E2E 
       await page.fill('input[type="email"]', "admin@e2e-publishing.com");
       await page.fill('input[type="password"]', "StrongPassword123!");
       await page.getByRole("button", { name: "Initialize Root Admin" }).click();
+      const setupResult = await Promise.race([
+        page.waitForURL("/", { timeout: 10000 }).then(() => "initialized"),
+        page
+          .getByText("Initial setup is already complete. Please switch to Sign In.")
+          .waitFor({ state: "visible", timeout: 10000 })
+          .then(() => "already-initialized"),
+      ]);
+      if (setupResult === "already-initialized") {
+        await page.getByRole("button", { name: "Sign In", exact: true }).click();
+        await page.fill('input[type="email"]', "admin@e2e-publishing.com");
+        await page.fill('input[type="password"]', "StrongPassword123!");
+        await page.getByRole("button", { name: "Secure Sign In" }).click();
+      }
     } else {
       await page.fill('input[type="email"]', "admin@e2e-publishing.com");
       await page.fill('input[type="password"]', "StrongPassword123!");

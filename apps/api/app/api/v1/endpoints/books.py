@@ -13,6 +13,7 @@ from app.schemas.book import BookCreate, BookUpdate, BookResponse, BookListRespo
 from app.schemas.planning import BookPlanRequest, BookPlanResponse, ApplyPlanRequest
 from app.services.book_planning import BookPlanningService
 from app.services.kdp_validator import KDPValidatorService
+from app.services.approval import ApprovalService
 from app.schemas.kdp_validator import PrintSpecsValidationRequest
 
 router = APIRouter(prefix="/books", tags=["Books & Product Studio"])
@@ -144,6 +145,9 @@ def update_book(
         if hasattr(book, field):
             setattr(book, field, val)
 
+    ApprovalService.invalidate_active_approval(
+        db, book.id, "Book metadata or manufacturing parameters updated", commit=False
+    )
     db.commit()
     db.refresh(book)
     return _build_book_response(db, book)
@@ -226,6 +230,9 @@ def apply_plan_to_book(
         )
         db.add(chapter)
 
+    ApprovalService.invalidate_active_approval(
+        db, book.id, "Book planning structure reapplied", commit=False
+    )
     db.commit()
     db.refresh(book)
     return _build_book_response(db, book)

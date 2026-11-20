@@ -21,6 +21,12 @@ from app.schemas.illustration import (
     IllustrationPromptGenerateResponse,
     IllustrationPromptItem,
 )
+from app.schemas.research import (
+    ResearchAssistanceResponse,
+    NicheAngle,
+    ResearchQuestionItem,
+    ContentGapItem,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -169,6 +175,57 @@ class MockAIProvider(BaseAIProvider):
             fix_prompts = DEFAULT_ILLUSTRATION_PROMPT_FIXTURES.get(topic_key, DEFAULT_ILLUSTRATION_PROMPT_FIXTURES["default"])
             items = [IllustrationPromptItem(**p) for p in fix_prompts]
             data = IllustrationPromptGenerateResponse(prompts=items)
+        elif issubclass(response_model, ResearchAssistanceResponse):
+            data = ResearchAssistanceResponse(
+                book_id="",
+                topic_refinement=[
+                    NicheAngle(
+                        angle_title="Practical foundations",
+                        core_premise="Explain the persisted topic through clear foundational concepts.",
+                        differentiation_hook="Use the book's actual outline and reader questions to set scope.",
+                    )
+                ],
+                audience_positioning={
+                    "positioning": "A practical guide shaped by the audience already specified for this book.",
+                    "evidence_status": "AI suggestion; validate with readers.",
+                },
+                reader_profile_suggestions={
+                    "profile": "Use the persisted target audience as the starting point.",
+                    "evidence_status": "Assumption; not based on external reader research.",
+                },
+                metadata_suggestions={
+                    "title_ideas": [],
+                    "subtitle_ideas": [],
+                    "keyword_phrases": [],
+                    "category_ideas": [],
+                    "note": "Suggestions only; no search volume or ranking data was used.",
+                },
+                research_questions=[
+                    ResearchQuestionItem(
+                        category="Reader needs",
+                        question="What practical question should a reader be able to answer after this section?",
+                        strategic_objective="Use the answer to validate chapter scope.",
+                    )
+                ],
+                content_gap_analysis=[
+                    ContentGapItem(
+                        missing_area="Evidence and examples",
+                        reader_expectation="Readers may expect claims to be supported with traceable sources.",
+                        suggested_chapter_or_section="Identify claims that need primary-source verification.",
+                    )
+                ],
+                publishing_preparation_checklist=[
+                    "Verify factual claims against primary sources.",
+                    "Review all metadata suggestions before use.",
+                ],
+                assumptions=[],
+                ai_suggestions=[
+                    "Review the proposed scope and examples with the intended readers."
+                ],
+                missing_external_research=[
+                    "No external demand, keyword-volume, ranking, competitor, review, or market research was performed."
+                ],
+            )
         else:
             # Fallback for generic models
             data = response_model.model_validate({})
